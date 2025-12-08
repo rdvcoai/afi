@@ -11,6 +11,7 @@ import email_ingest
 import identity_manager
 from tools import TOOLS_SCHEMA, get_financial_audit, create_category_tool, categorize_payees_tool
 from database import init_db, get_user_context, save_user_context, get_conn
+from profile_manager import get_user_profile, update_financial_goals
 
 # Inicialización
 app = FastAPI(title="AFI Brain v7.0 God Mode")
@@ -219,75 +220,55 @@ def ai_router(text: str, user_context: dict) -> str:
     try:
         phone = user_context.get("phone") or user_context.get("from_user")
 
-        # 1. Recuperar Memoria Persistente
-        state = get_user_context(phone)
-        file_summary = ""
-        current_mode = "NORMAL"
+        # 1. RECUPERAR IDENTIDAD Y MEMORIA
+        user_profile = get_user_profile(phone)
+        state = get_user_context(phone)  # Memoria técnica (vectores, csv)
 
-        if state:
-            file_summary = state.get("file_context") or ""
-            current_mode = state.get("mode") or "NORMAL"
+        file_summary = state.get("file_context") if state else ""
 
-        def _retrieve_wisdom(query: str, top_k: int = 3) -> str:
-            """Busca pasajes relevantes en financial_wisdom usando pgvector."""
-            try:
-                resp = genai.embed_content(model="models/text-embedding-004", content=query, task_type="retrieval_query")
-                embedding = None
-                if isinstance(resp, dict):
-                    embedding = resp.get("embedding")
-                else:
-                    try:
-                        embedding = resp["embedding"]
-                    except Exception:
-                        embedding = None
-                if not embedding:
-                    return ""
-                # pgvector requiere el literal en formato '[1,2,3]' cuando llega como texto
-                vec_literal = "[" + ",".join(f"{float(x):.6f}" for x in embedding) + "]"
-                with get_conn() as conn:
-                    with conn.cursor() as cur:
-                        cur.execute(
-                            "SELECT content, metadata FROM financial_wisdom ORDER BY embedding <-> %s::vector LIMIT %s",
-                            (vec_literal, top_k),
-                        )
-                        rows = cur.fetchall()
-                        if not rows:
-                            return ""
-                        snippets = []
-                        for content, metadata in rows:
-                            source = "desconocido"
-                            try:
-                                if isinstance(metadata, str):
-                                    meta = json.loads(metadata)
-                                else:
-                                    meta = metadata or {}
-                                source = meta.get("source", source)
-                            except Exception:
-                                pass
-                            snippets.append(f"[{source}] {content}")
-                        return "\n\n".join(snippets)
-            except Exception as e:
-                print(f"⚠️ RAG search failed: {e}")
-                return ""
+        # 2. LOGICA DE MODO (SHERLOCK VS CFO)
+        # Si es el Admin, no tiene resumen de archivos y su perfil está incompleto -> MODO SHERLOCK
+        if user_profile and user_profile['role'] == 'admin' and not file_summary and user_profile['status'] == 'incomplete':
+            system_instruction = """
+Eres AFI, el Asesor Financiero Personal de Diego.
 
-        # 2. Autorecuperación de contexto (Si la DB está vacía pero hay archivo)
-        if not file_summary:
-            print("🔍 Contexto vacío. Intentando leer auditoría física...")
-            try:
-                raw_audit = get_financial_audit()  # Lee CSV
-                if raw_audit and "total_spent" in raw_audit and "Error" not in raw_audit:
-                    file_summary = raw_audit
-                    current_mode = "ONBOARDING"
-                    save_user_context(phone, file_summary=raw_audit, mode="ONBOARDING")
-            except Exception as e:
-                print(f"⚠️ No hay CSV o error lectura: {e}")
+SITUACIÓN ACTUAL:
+Estás en la fase de 'Discovery' (Investigación). No tienes datos históricos (CSVs) ni un perfil claro.
 
-        # 2b. Recuperar RAG de libros
-        wisdom_context = retrieve_wisdom(text, top_k=3)
+OBJETIVO:
+Entrevistar a Diego para construir su 'Perfil Base' en 3 pasos rápidos.
 
-        # 3. Prompt Dinámico Blindado
-        system_instruction = get_system_instruction(file_summary, current_mode, wisdom_context)
+REGLAS DE INTERACCIÓN:
+1. NO pidas subir archivos todavía. Queremos conversar.
+2. Haz una pregunta a la vez. Sé conciso.
+3. Pregunta clave 1: "¿Cuáles son tus 3 gastos fijos más grandes?"
+4. Pregunta clave 2: "¿Qué deuda te quita el sueño hoy?"
+5. Pregunta clave 3: "¿Cuánto quieres ahorrar al mes?"
 
+Cuando tengas las respuestas, confírmalas y di: "Perfil creado. Empecemos a registrar."
+"""
+        else:
+            # MODO NORMAL (CFO) - Usa la memoria y herramientas existentes
+            current_mode = "NORMAL"
+            if state:
+                current_mode = state.get("mode") or "NORMAL"
+
+            # Autorecuperación de contexto (Si la DB está vacía pero hay archivo)
+            if not file_summary:
+                print("🔍 Contexto vacío. Intentando leer auditoría física...")
+                try:
+                    raw_audit = get_financial_audit()  # Lee CSV
+                    if raw_audit and "total_spent" in raw_audit and "Error" not in raw_audit:
+                        file_summary = raw_audit
+                        current_mode = "ONBOARDING"
+                        save_user_context(phone, file_summary=raw_audit, mode="ONBOARDING")
+                except Exception as e:
+                    print(f"⚠️ No hay CSV o error lectura: {e}")
+
+            wisdom_context = retrieve_wisdom(text)
+            system_instruction = get_system_instruction(file_summary, current_mode, wisdom_context)
+
+        # 3. INVOCAR GEMINI
         model = genai.GenerativeModel(
             "gemini-2.5-flash",
             tools=TOOLS_SCHEMA,

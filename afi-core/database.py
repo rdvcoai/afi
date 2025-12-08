@@ -61,6 +61,29 @@ def init_db():
                 """
             )
 
+            # NUEVA TABLA: USUARIOS (PERFIL PERSONAL)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS users (
+                    phone TEXT PRIMARY KEY,
+                    name TEXT,
+                    role TEXT DEFAULT 'user', -- 'admin' para Diego
+                    profile_status TEXT DEFAULT 'incomplete', -- 'incomplete', 'active'
+                    financial_goals TEXT, -- Resumen de metas (ej: 'Pagar deuda Nubank')
+                    last_interaction TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+            """)
+
+            # SEED: CREAR ADMIN (DIEGO) AUTOMÁTICAMENTE
+            # Asegura que tu número siempre tenga rol admin
+            admin_phone = os.getenv("ADMIN_PHONE", "57300.......") # Definir en .env
+            cur.execute("""
+                INSERT INTO users (phone, name, role)
+                VALUES (%s, 'Diego', 'admin')
+                ON CONFLICT (phone) DO NOTHING;
+            """, (admin_phone,))
+
+            print("✅ Esquema de Usuarios sincronizado.")
+
 
 def save_user_context(phone, file_summary=None, mode=None):
     """Guarda/actualiza el estado del usuario."""
