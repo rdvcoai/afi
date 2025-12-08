@@ -1,5 +1,7 @@
 import os
+import time
 import psycopg2
+from psycopg2.extras import Json
 
 # Configuración
 DB_HOST = os.getenv("DB_HOST", "afi_db")
@@ -14,10 +16,29 @@ def get_conn():
     return conn
 
 
+def wait_for_db(retries: int = 5, delay: int = 2):
+    """Espera activa hasta que la DB esté lista para conexiones."""
+    attempts = retries
+    while attempts > 0:
+        try:
+            with get_conn() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("SELECT 1;")
+            print("✅ Conexión a Postgres exitosa.")
+            return
+        except psycopg2.OperationalError:
+            print("⏳ Esperando a Postgres...")
+            time.sleep(delay)
+            attempts -= 1
+    print("❌ No se pudo conectar a Postgres.")
+
+
 def init_db():
-    """Crea las tablas necesarias si no existen."""
+    """Inicializa esquemas y extensiones."""
+    wait_for_db()
     with get_conn() as conn:
         with conn.cursor() as cur:
+            cur.execute("CREATE EXTENSION IF NOT EXISTS vector;")
             cur.execute(
                 """
                 CREATE TABLE IF NOT EXISTS user_state (
@@ -29,7 +50,16 @@ def init_db():
                 );
                 """
             )
-            cur.execute("CREATE EXTENSION IF NOT EXISTS vector;")
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS financial_wisdom (
+                    id BIGSERIAL PRIMARY KEY,
+                    content TEXT,
+                    metadata JSONB,
+                    embedding VECTOR(768)
+                );
+                """
+            )
 
 
 def save_user_context(phone, file_summary=None, mode=None):
@@ -38,23 +68,17 @@ def save_user_context(phone, file_summary=None, mode=None):
         return
     with get_conn() as conn:
         with conn.cursor() as cur:
-            updates = []
-            params = []
-            if file_summary is not None:
-                updates.append("file_context = %s")
-                params.append(file_summary)
-            if mode is not None:
-                updates.append("current_mode = %s")
-                params.append(mode)
-            if updates:
-                params.append(phone)
-                query = f"UPDATE user_state SET {', '.join(updates)} WHERE phone = %s"
-                cur.execute(query, tuple(params))
-                if cur.rowcount == 0:
-                    cur.execute(
-                        "INSERT INTO user_state (phone, file_context, current_mode) VALUES (%s, %s, %s)",
-                        (phone, file_summary or "", mode or "NORMAL"),
-                    )
+            cur.execute(
+                """
+                INSERT INTO user_state (phone, file_context, current_mode)
+                VALUES (%s, %s, %s)
+                ON CONFLICT (phone) DO UPDATE SET
+                    file_context = COALESCE(EXCLUDED.file_context, user_state.file_context),
+                    current_mode = COALESCE(EXCLUDED.current_mode, user_state.current_mode),
+                    last_updated = CURRENT_TIMESTAMP;
+                """,
+                (phone, file_summary, mode),
+            )
 
 
 def get_user_context(phone):

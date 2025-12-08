@@ -10,7 +10,7 @@ import httpx
 import email_ingest
 import identity_manager
 from tools import TOOLS_SCHEMA, get_financial_audit, create_category_tool, categorize_payees_tool
-from database import init_db, get_user_context, save_user_context
+from database import init_db, get_user_context, save_user_context, get_conn
 
 # Inicialización
 app = FastAPI(title="AFI Brain v7.0 God Mode")
@@ -49,7 +49,7 @@ async def morning_briefing():
     print("⏰ Generando Morning Briefing con IA...")
     try:
         today = datetime.date.today()
-        model = genai.GenerativeModel("gemini-2.5-pro")
+        model = genai.GenerativeModel("gemini-2.5-flash")
         prompt = f"""
 Eres AFI, mi gestor de patrimonio. Hoy es {today.strftime('%A %d de %B')}.
 Genera un 'Morning Briefing' corto (máx 3 párrafos) estilo Mr. Money Mustache / Ramit Sethi.
@@ -113,6 +113,105 @@ def execute_function(name, args):
     return "Error: Tool not found"
 
 
+def get_system_instruction(file_summary: str, current_mode: str, wisdom_context: str) -> str:
+    """Construye el prompt del sistema con idioma forzado y capacidades multimodales."""
+    return f"""
+Eres AFI, el CFO Personal y Asesor Patrimonial.
+
+IDIOMA OBLIGATORIO:
+Habla EXCLUSIVAMENTE en Español Latinoamericano.
+Usa términos locales (pesos, 'tanquear', 'mercado') si aplica.
+Nunca respondas en inglés.
+
+MEMORIA DEL USUARIO:
+{file_summary[:6000]}
+
+ESTADO ACTUAL: {current_mode}
+
+CONOCIMIENTO FINANCIERO (LIBROS):
+{wisdom_context if wisdom_context else "Sin citas disponibles para esta consulta."}
+
+CAPACIDADES:
+- Puedes ver imágenes (recibos, facturas). Extrae: Fecha, Comercio, Total, Categoría.
+- Puedes escuchar audios. Transcribe mentalmente y ejecuta la intención financiera.
+
+INSTRUCCIONES:
+1. Tu conocimiento sobre las finanzas de Diego viene EXCLUSIVAMENTE de la sección 'MEMORIA' de arriba. Úsala.
+2. Si el estado es ONBOARDING y Diego saluda, preséntale el hallazgo más grande de la memoria.
+3. Si hay texto en CONOCIMIENTO FINANCIERO, úsalo para responder y cita la fuente entre corchetes.
+4. Si la memoria está vacía, inicia una entrevista para recolectar datos.
+"""
+
+
+def retrieve_wisdom(query: str, top_k: int = 3) -> str:
+    """Busca pasajes relevantes en financial_wisdom usando pgvector."""
+    if not query:
+        return ""
+    try:
+        resp = genai.embed_content(model="models/text-embedding-004", content=query, task_type="retrieval_query")
+        embedding = None
+        if isinstance(resp, dict):
+            embedding = resp.get("embedding")
+        else:
+            try:
+                embedding = resp["embedding"]
+            except Exception:
+                embedding = None
+        if not embedding:
+            return ""
+        vec_literal = "[" + ",".join(f"{float(x):.6f}" for x in embedding) + "]"
+        with get_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT content, metadata FROM financial_wisdom ORDER BY embedding <-> %s::vector LIMIT %s",
+                    (vec_literal, top_k),
+                )
+                rows = cur.fetchall()
+                if not rows:
+                    return ""
+                snippets = []
+                for content, metadata in rows:
+                    source = "desconocido"
+                    try:
+                        if isinstance(metadata, str):
+                            meta = json.loads(metadata)
+                        else:
+                            meta = metadata or {}
+                        source = meta.get("source", source)
+                    except Exception:
+                        pass
+                    snippets.append(f"[{source}] {content}")
+                return "\n\n".join(snippets)
+    except Exception as e:
+        print(f"⚠️ RAG search failed: {e}")
+        return ""
+
+
+def process_multimodal_request(user_text: str, media_path: str, media_mime: str, system_instruction: str) -> str:
+    """Procesa audio/imagen con Gemini 2.5 Flash."""
+    print(f"👁️ Procesando archivo: {media_path} ({media_mime})")
+    try:
+        uploaded_file = genai.upload_file(media_path, mime_type=media_mime)
+        multimodal_prompt = f"""
+CONTEXTO DEL USUARIO (Texto acompañante): "{user_text}"
+
+TAREA:
+Analiza este archivo (Audio o Imagen).
+1. Si es AUDIO: Transcribe lo que dice y extrae la intención (Gasto, Consulta, Reflexión).
+2. Si es IMAGEN: Extrae los datos financieros (Comercio, Total, Fecha).
+
+ACCION:
+Si detectas un gasto, actúa inmediatamente invocando las herramientas necesarias.
+Si es una consulta, responde en Español.
+"""
+        model = genai.GenerativeModel("gemini-2.5-flash", system_instruction=system_instruction, tools=TOOLS_SCHEMA)
+        response = model.generate_content([multimodal_prompt, uploaded_file])
+        return response.text if response else "⚠️ No se obtuvo respuesta del modelo."
+    except Exception as e:
+        print(f"❌ Error multimodal: {e}")
+        return "⚠️ No pude procesar el archivo. Intenta de nuevo."
+
+
 def ai_router(text: str, user_context: dict) -> str:
     """Bucle agéntico con Gemini y function-calling."""
     global chat_history
@@ -120,45 +219,77 @@ def ai_router(text: str, user_context: dict) -> str:
     try:
         phone = user_context.get("phone") or user_context.get("from_user")
 
-        # Recuperar contexto persistente
+        # 1. Recuperar Memoria Persistente
         state = get_user_context(phone)
         file_summary = ""
-        has_data = False
-        if state and state.get("file_context"):
-            file_summary = state["file_context"]
-            has_data = True
-        else:
-            # Intentar auditar disco si DB vacía
-            print("🔍 DB vacía para usuario. Leyendo CSV físico...")
+        current_mode = "NORMAL"
+
+        if state:
+            file_summary = state.get("file_context") or ""
+            current_mode = state.get("mode") or "NORMAL"
+
+        def _retrieve_wisdom(query: str, top_k: int = 3) -> str:
+            """Busca pasajes relevantes en financial_wisdom usando pgvector."""
             try:
-                raw_audit = get_financial_audit()
-                if raw_audit:
+                resp = genai.embed_content(model="models/text-embedding-004", content=query, task_type="retrieval_query")
+                embedding = None
+                if isinstance(resp, dict):
+                    embedding = resp.get("embedding")
+                else:
+                    try:
+                        embedding = resp["embedding"]
+                    except Exception:
+                        embedding = None
+                if not embedding:
+                    return ""
+                # pgvector requiere el literal en formato '[1,2,3]' cuando llega como texto
+                vec_literal = "[" + ",".join(f"{float(x):.6f}" for x in embedding) + "]"
+                with get_conn() as conn:
+                    with conn.cursor() as cur:
+                        cur.execute(
+                            "SELECT content, metadata FROM financial_wisdom ORDER BY embedding <-> %s::vector LIMIT %s",
+                            (vec_literal, top_k),
+                        )
+                        rows = cur.fetchall()
+                        if not rows:
+                            return ""
+                        snippets = []
+                        for content, metadata in rows:
+                            source = "desconocido"
+                            try:
+                                if isinstance(metadata, str):
+                                    meta = json.loads(metadata)
+                                else:
+                                    meta = metadata or {}
+                                source = meta.get("source", source)
+                            except Exception:
+                                pass
+                            snippets.append(f"[{source}] {content}")
+                        return "\n\n".join(snippets)
+            except Exception as e:
+                print(f"⚠️ RAG search failed: {e}")
+                return ""
+
+        # 2. Autorecuperación de contexto (Si la DB está vacía pero hay archivo)
+        if not file_summary:
+            print("🔍 Contexto vacío. Intentando leer auditoría física...")
+            try:
+                raw_audit = get_financial_audit()  # Lee CSV
+                if raw_audit and "total_spent" in raw_audit and "Error" not in raw_audit:
                     file_summary = raw_audit
-                    has_data = True
+                    current_mode = "ONBOARDING"
                     save_user_context(phone, file_summary=raw_audit, mode="ONBOARDING")
             except Exception as e:
                 print(f"⚠️ No hay CSV o error lectura: {e}")
 
-        system_instruction = f"""
-Eres AFI, el CFO Personal y Asesor Patrimonial de Diego.
-No eres un bot. Eres un experto financiero de alto nivel.
+        # 2b. Recuperar RAG de libros
+        wisdom_context = retrieve_wisdom(text, top_k=3)
 
-MEMORIA PERSISTENTE (datos del usuario):
-{file_summary[:5000]}
-
-MODOS DE OPERACIÓN:
-1. MODO AUDITOR (si hay datos): Usa get_financial_audit. Si hay transacciones, analízalas, agrupa patrones y propone categorías. Usa create_category_tool y categorize_payees_tool con confirmación.
-2. MODO ENTREVISTADOR (si NO hay datos o has_data=False): Haz preguntas socráticas sobre gastos fijos, deudas, métodos de pago; pide foto/nota de voz si falta info. No te quedes callado.
-
-REGLAS:
-1. Habla como humano experto, directo y estratégico; usa emojis con moderación.
-2. Usa herramientas para ver datos y ejecutar cambios; espera resultados reales, no inventes errores.
-3. Si el usuario pide separar/crear categorías, usa create_category_tool/categorize_payees_tool y confirma.
-4. Si no hay datos, entrevista proactiva: “No veo historial, cuéntame tus 3 gastos fijos más grandes”.
-"""
+        # 3. Prompt Dinámico Blindado
+        system_instruction = get_system_instruction(file_summary, current_mode, wisdom_context)
 
         model = genai.GenerativeModel(
-            "gemini-2.5-pro",
+            "gemini-2.5-flash",
             tools=TOOLS_SCHEMA,
             system_instruction=system_instruction,
         )
@@ -241,7 +372,41 @@ async def receive_message(request: Request):
     user["phone"] = user_phone
     user["from_user"] = user_phone
 
-    reply_text = ai_router(body, user)
+    reply_text = ""
+
+    # Memoria persistente para multimodal y texto
+    state = get_user_context(user_phone)
+    file_summary = state.get("file_context") if state else ""
+    current_mode = state.get("mode") if state else "NORMAL"
+
+    if not file_summary:
+        try:
+            raw_audit = get_financial_audit()
+            if raw_audit and "total_spent" in raw_audit and "Error" not in raw_audit:
+                file_summary = raw_audit
+                current_mode = "ONBOARDING"
+                save_user_context(user_phone, file_summary=raw_audit, mode="ONBOARDING")
+        except Exception as e:
+            print(f"⚠️ No hay CSV o error lectura: {e}")
+
+    # Consolidar media (nuevo o legacy)
+    media_payload = data.get("media")
+    if not media_payload and data.get("media_path"):
+        media_payload = {"path": data.get("media_path"), "mime": data.get("media_mime")}
+
+    if data.get("hasMedia") and media_payload and media_payload.get("path"):
+        wisdom_context = retrieve_wisdom(body, top_k=3)
+        system_instruction = get_system_instruction(file_summary or "", current_mode or "NORMAL", wisdom_context)
+        reply_text = process_multimodal_request(
+            body,
+            media_payload.get("path"),
+            media_payload.get("mime") or "application/octet-stream",
+            system_instruction,
+        )
+    else:
+        # Flujo Texto Normal
+        reply_text = ai_router(body, user)
+
     print(f"🧠 Gemini responde: {str(reply_text)[:80]}...")
 
     if reply_text:
