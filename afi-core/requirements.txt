@@ -1,0 +1,19 @@
+fastapi
+uvicorn
+requests
+python-dotenv
+google-generativeai     # Gemini
+chromadb                # RAG
+langchain               # Orquestación RAG
+langchain-community
+langchain-text-splitters
+pypdf                   # Leer PDFs (Libros)
+apscheduler             # Proactividad
+imap-tools              # Leer correos
+edge-tts                # Voz del Oráculo
+matplotlib              # Gráficos
+kaleido                 # Exportar gráficos a imagen
+pandas
+numpy
+httpx
+psycopg2-binary

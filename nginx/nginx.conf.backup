@@ -1,0 +1,68 @@
+events {
+    worker_connections 1024;
+}
+
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+
+    # Optimización básica
+    sendfile        on;
+    keepalive_timeout  65;
+
+    # Bloque para redirigir HTTP a HTTPS
+    server {
+        listen 80;
+        server_name afi.rdv.net.co;
+        server_tokens off;
+
+        location /.well-known/acme-challenge/ {
+            root /var/www/certbot;
+        }
+
+        location / {
+            return 301 https://$host$request_uri;
+        }
+    }
+
+    # Bloque HTTPS (Se activará cuando tengamos certificados)
+    server {
+        listen 443 ssl;
+        server_name afi.rdv.net.co;
+        server_tokens off;
+
+        # Certificados (Mapeados desde Certbot)
+        ssl_certificate /etc/letsencrypt/live/afi.rdv.net.co/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/afi.rdv.net.co/privkey.pem;
+
+        # Mejores prácticas SSL
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_prefer_server_ciphers on;
+
+        # --- AQUÍ ESTÁ LA SOLUCIÓN AL ERROR CRÍTICO ---
+        # Actual Budget requiere estas cabeceras para SharedArrayBuffer
+        add_header Cross-Origin-Opener-Policy "same-origin" always;
+        add_header Cross-Origin-Embedder-Policy "require-corp" always;
+        # -----------------------------------------------
+
+        # Proxy para Actual Budget
+        location / {
+            proxy_pass http://actual-server:5006;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+
+            # Websockets (Importante para Actual)
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+        }
+
+        # Proxy para el Cerebro (Opcional, si queremos exponer API)
+        location /api/ {
+            proxy_pass http://afi-core:8080/;
+            proxy_set_header Host $host;
+        }
+    }
+}

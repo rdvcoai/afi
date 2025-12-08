@@ -1,0 +1,126 @@
+services:
+  # 1. LA BÓVEDA FINANCIERA
+  actual-server:
+    image: actualbudget/actual-server:latest
+    container_name: afi_actual
+    ports:
+      - "5006:5006"
+    volumes:
+      - ./data/actual_data:/data
+    restart: unless-stopped
+    networks:
+      - afi_network
+
+  # 2. LA MEMORIA VECTORIAL
+  chroma-db:
+    image: chromadb/chroma:latest
+    container_name: afi_chroma
+    volumes:
+      - ./data/chroma_data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+    ports:
+      - "8000:8000"
+    networks:
+      - afi_network
+
+  # 3. EL CEREBRO (Python)
+  afi-core:
+    build: ./afi-core
+    container_name: afi_core
+    depends_on:
+      - actual-server
+      - chroma-db
+      - afi_db
+    volumes:
+      - ./afi-core:/app
+      - ./data/books:/app/books
+      - ./backups:/app/backups
+      - ./data/media:/app/media
+    env_file: .env
+    environment:
+      - DB_HOST=afi_db
+      - DB_USER=afi_user
+      - DB_PASS=${DB_PASSWORD}
+      - DB_NAME=afi_brain
+    ports:
+      - "8080:8080"
+    networks:
+      - afi_network
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+
+  # 4. LA INTERFAZ BLINDADA (Node.js)
+  afi-whatsapp:
+    build: ./afi-whatsapp
+    container_name: afi_whatsapp
+    depends_on:
+      - afi-core
+    volumes:
+      - ./afi-whatsapp/session:/usr/src/app/session
+      - ./data/media:/usr/src/app/media
+    env_file: .env
+    networks:
+      - afi_network
+
+  # BASE DE DATOS UNIFICADA
+  afi_db:
+    image: ankane/pgvector:latest
+    container_name: afi_db
+    restart: always
+    environment:
+      POSTGRES_USER: afi_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: afi_brain
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    networks:
+      - afi_network
+
+  # 5. EL GUARDIÁN (Backup - Opcional en dev, critico en prod)
+  # Requiere configuración previa de Rclone en el host o montaje de config
+  # backup-service:
+  #   image: rclone/rclone:latest
+  #   ... (configuraremos esto en Sprint 2)
+
+  # 8. IA LOCAL (Ollama)
+  ollama-local:
+    image: ollama/ollama:latest
+    container_name: afi_ollama
+    volumes:
+      - ./data/ollama:/root/.ollama
+    restart: unless-stopped
+    networks:
+      - afi_network
+
+  # 6. PROXY REVERSO (NGINX)
+  nginx:
+    image: nginx:latest
+    container_name: afi_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    depends_on:
+      - actual-server
+      - afi-core
+    networks:
+      - afi_network
+
+  # 7. GESTOR SSL (CERTBOT)
+  certbot:
+    image: certbot/certbot
+    container_name: afi_certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    # No necesitamos network aquí, comparte volumen con Nginx
+
+networks:
+  afi_network:
+    driver: bridge
