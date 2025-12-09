@@ -451,6 +451,8 @@ async def process_buffered_files(phone: str):
         print(f"ℹ️ Buffer vacío para {phone}, nada que procesar.")
         return
 
+    target_phone = os.getenv("ADMIN_PHONE", phone)
+
     print(f"🚀 Procesando lote consolidado de {len(files)} archivos para {phone}...")
 
     all_transactions = []
@@ -464,7 +466,10 @@ async def process_buffered_files(phone: str):
 
     if not all_transactions:
         print("⚠️ No se extrajeron transacciones de los archivos.")
-        await send_push_message(phone, "Recibí tus archivos pero no pude extraer movimientos. ¿Puedes reenviarlos en CSV/Excel estándar?")
+        await send_push_message(
+            target_phone,
+            "Recibí tus archivos pero no pude extraer movimientos. ¿Puedes reenviarlos en CSV/Excel estándar?",
+        )
         debounce_generation.pop(phone, None)
         return
 
@@ -492,7 +497,8 @@ async def process_buffered_files(phone: str):
         f"*Dime el nombre de la cuenta o envía más archivos.*"
     )
 
-    await send_push_message(phone, response_text)
+    print(f"📤 Enviando respuesta a ADMIN: {target_phone} (Ignorando {phone})")
+    await send_push_message(target_phone, response_text)
     debounce_generation.pop(phone, None)
 
 
