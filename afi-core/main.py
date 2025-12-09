@@ -454,11 +454,22 @@ async def process_buffered_files(phone: str):
     target_phone = os.getenv("ADMIN_PHONE", phone)
 
     print(f"🚀 Procesando lote consolidado de {len(files)} archivos para {phone}...")
+    await send_push_message(
+        target_phone,
+        f"⏳ Recibí {len(files)} archivos. Arranco el procesamiento; si ves este mensaje, sigo vivo.",
+    )
 
     all_transactions = []
+    processed_rows = 0
     for file in files:
         try:
             txs = await asyncio.to_thread(process_file_stream, file["path"], file["mime"])
+            processed_rows += len(txs) if txs else 0
+            if processed_rows and processed_rows % 300 == 0:
+                await send_push_message(
+                    target_phone,
+                    f"⏳ Sigo analizando... llevo {processed_rows} movimientos extraídos.",
+                )
             if txs:
                 all_transactions.extend(txs)
         except Exception as e:
