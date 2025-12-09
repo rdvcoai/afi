@@ -69,7 +69,8 @@ class WhatsAppMessage(BaseModel):
 
 def _debounce_worker(phone: str, gen: int):
     """Worker en hilo: espera ventana y procesa si la generación sigue vigente."""
-    time.sleep(0.5)
+    # Procesar casi inmediato
+    time.sleep(0.1)
     if debounce_generation.get(phone) != gen:
         return
     try:
