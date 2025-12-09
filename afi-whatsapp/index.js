@@ -142,6 +142,33 @@ app.post('/send-message', async (req, res) => {
     }
 });
 
+// Endpoint push alternativo (acepta 'to' como número plano o chatId)
+app.post('/send', async (req, res) => {
+    try {
+        const { to, message } = req.body || {};
+        if (!to || !message) return res.status(400).send('Faltan datos');
+        if (!isReady) return res.status(503).send('WhatsApp client not ready');
+
+        const chatId = to.includes('@') ? to : `${to}@c.us`;
+        console.log(`📤 Push solicitado para: ${chatId}`);
+
+        // Inyección directa estable (Store.Chat)
+        await client.pupPage.evaluate(async (dest, text) => {
+            const chat = await window.Store.Chat.get(dest);
+            if (chat) {
+                await chat.sendMessage(text);
+            } else {
+                console.error('Chat no encontrado en Store:', dest);
+            }
+        }, chatId, message);
+
+        res.json({ success: true });
+    } catch (e) {
+        console.error("❌ Error en Push /send:", e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // Endpoint: últimas transacciones
 app.get('/transactions', async (_req, res) => {
     try {

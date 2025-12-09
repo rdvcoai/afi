@@ -2,6 +2,7 @@ import os
 import json
 import datetime
 import time
+import asyncio
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
 import google.generativeai as genai
@@ -47,6 +48,9 @@ MODEL_FAST = "gemini-2.5-flash"  # Operación diaria / respuestas rápidas
 
 # Memoria de chat agéntico
 chat_history = []
+# Buffers para uploads múltiples
+upload_buffers: dict[str, list] = {}
+upload_timers: dict[str, asyncio.Task] = {}
 # Desactivar WatchFiles: no usar reload en producción; este flag evita ruido si se activa en uvicorn.
 # Inicializar DB
 init_db()
@@ -235,12 +239,21 @@ def process_multimodal_request(user_text: str, media_path: str, media_mime: str,
         transactions = process_file_stream(media_path, media_mime or "")
         if not transactions:
             return "❌ Recibí el archivo pero no pude leer columnas de Fecha y Monto. ¿Es un formato estándar?"
-        save_pending_data(phone, transactions)
-        count = len(transactions)
-        total = sum(t.get("amount", 0) for t in transactions)
-        return f"""✅ Análisis exitoso.
-He extraído **{count} movimientos** (Total neto: ${total:,.0f}).
-¿A qué cuenta pertenecen estos datos? Ej: "Es mi Nubank", "Crea una cuenta llamada Ahorros". """
+        existing = get_pending_data(phone) or []
+        if not isinstance(existing, list):
+            try:
+                existing = list(existing)
+            except Exception:
+                existing = []
+        combined = existing + transactions
+        save_pending_data(phone, combined)
+        count_new = len(transactions)
+        total_pending = len(combined)
+        return f"""✅ Archivo procesado.
+Añadí **{count_new} movimientos**.
+📊 Total acumulado en cola: **{total_pending}** movimientos.
+Sigue enviando archivos si tienes más.
+Cuando quieras cargar, dime: "Cargar a la cuenta X". """
 
     mime_to_use = media_mime or "application/octet-stream"
     if "ogg" in mime_to_use or media_path.endswith(".ogg"):
@@ -322,7 +335,8 @@ PROTOCOLO DE ENTREVISTA (Conversacional, no interrogatorio):
 REGLA DE ORO:
 - Si el usuario subió un CSV, analízalo PERO confirma tus sospechas con él. "Veo muchos movimientos en Nubank, ¿esa es tu tarjeta principal?"
 - Habla siempre en Español Latinoamericano.
- - HERRAMIENTA ESPECIAL ADMIN: Puedes leer archivos en /app/data/csv. Si el usuario te pide cargar historia (ej: Nubank), pregunta el nombre del archivo o sugiérelo y usa import_history_from_file_tool con el ID de la cuenta.
+- HERRAMIENTA ESPECIAL ADMIN: Puedes leer archivos en /app/data/csv. Si el usuario te pide cargar historia (ej: Nubank), pregunta el nombre del archivo o sugiérelo y usa import_history_from_file_tool con el ID de la cuenta.
+- SI ENVÍA VARIOS ARCHIVOS: Procesa cada uno, acumula cuántos movimientos llevas y pregunta a qué cuenta cargarlos cuando termine.
 """
         else:
             # MODO NORMAL (CFO) - Usa la memoria y herramientas existentes
@@ -458,7 +472,20 @@ async def receive_message(request: Request):
     if not media_payload and data.get("media_path"):
         media_payload = {"path": data.get("media_path"), "mime": data.get("media_mime")}
 
+    # --- Buffer de archivos (CSV/Excel/PDF) con debounce 4s ---
     if data.get("hasMedia") and media_payload and media_payload.get("path"):
+        mime = (media_payload.get("mime") or "").lower()
+        is_doc = any(x in mime for x in ["csv", "comma-separated", "sheet", "excel", "ms-excel", "pdf"]) or media_payload.get("path", "").endswith((".csv", ".xlsx", ".xls", ".pdf"))
+        if is_doc:
+            # Acumular en buffer
+            upload_buffers.setdefault(user_phone, []).append({"path": media_payload.get("path"), "mime": media_payload.get("mime")})
+            # Resetear timer
+            if user_phone in upload_timers and not upload_timers[user_phone].done():
+                upload_timers[user_phone].cancel()
+            upload_timers[user_phone] = asyncio.create_task(wait_and_run(user_phone))
+            return {"status": "buffered"}
+
+        # Otros media (audio/imagen) -> procesar normal
         wisdom_context = retrieve_wisdom(body, top_k=3)
         system_instruction = get_system_instruction(file_summary or "", current_mode or "NORMAL", wisdom_context)
         reply_text = process_multimodal_request(
@@ -499,3 +526,56 @@ async def start_scheduler():
         print("⏳ Scheduler iniciado: AFI ahora tiene vida propia.")
     except Exception as e:
         print(f"⚠️ Error iniciando scheduler: {e}")
+
+
+# --- Buffer helpers ---
+async def wait_and_run(phone: str):
+    try:
+        await asyncio.sleep(4)
+        await process_buffered_queue(phone)
+    except asyncio.CancelledError:
+        pass
+
+
+async def process_buffered_queue(phone: str):
+    """Procesa los archivos acumulados en el buffer y envía un reporte único."""
+    files = upload_buffers.pop(phone, [])
+    if not files:
+        upload_timers.pop(phone, None)
+        return
+
+    total_txs = []
+    for media in files:
+        try:
+            txs = process_file_stream(media.get("path"), media.get("mime") or "")
+            total_txs.extend(txs)
+        except Exception as e:
+            print(f"⚠️ Error procesando media en buffer: {e}")
+
+    prev = get_pending_data(phone) or []
+    if not isinstance(prev, list):
+        try:
+            prev = list(prev)
+        except Exception:
+            prev = []
+    final_data = prev + total_txs
+    save_pending_data(phone, final_data)
+
+    msg = f"""
+📚 Lote procesado
+Archivos recibidos: {len(files)}
+Movimientos nuevos: {len(total_txs)}
+Total en cola: {len(final_data)}
+
+Cuando quieras cargar, di: "Cargar a la cuenta X".
+"""
+    await send_push(phone, msg)
+    upload_timers.pop(phone, None)
+
+
+async def send_push(phone: str, text: str):
+    try:
+        async with httpx.AsyncClient() as client:
+            await client.post("http://afi-whatsapp:3000/send", json={"to": phone, "message": text}, timeout=10)
+    except Exception as e:
+        print(f"❌ Error Push: {e}")
