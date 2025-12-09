@@ -45,6 +45,8 @@ services:
       - DB_USER=afi_user
       - DB_PASS=${DB_PASSWORD}
       - DB_NAME=afi_brain
+      - BRIDGE_URL=http://afi-whatsapp:3000
+      - WHATSAPP_PUSH_URL=http://afi-whatsapp:3000/send
     ports:
       - "8080:8080"
     networks:
@@ -57,10 +59,16 @@ services:
     container_name: afi_whatsapp
     depends_on:
       - afi-core
+    restart: always
+    environment:
+      - CORE_URL=http://afi-core:8080
+      - PORT=3000
+      - MEDIA_DIR=/app/data/media
     volumes:
       - ./afi-whatsapp/session:/app/data/session
       - ./data/media:/app/data/media
-    env_file: .env
+    ports:
+      - "3000:3000"
     networks:
       - afi_network
 

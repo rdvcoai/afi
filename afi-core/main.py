@@ -3,6 +3,7 @@ import json
 import datetime
 import time
 import asyncio
+import threading
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
 import google.generativeai as genai
@@ -39,8 +40,8 @@ else:
 
 # Configuración Push
 ADMIN_PHONE = os.getenv("ADMIN_PHONE")
-WHATSAPP_PUSH_URL = "http://afi-whatsapp:3000/send-message"
-BRIDGE_URL = "http://afi-whatsapp:3000"
+WHATSAPP_PUSH_URL = os.getenv("WHATSAPP_PUSH_URL", "http://afi-whatsapp:3000/send-message")
+BRIDGE_URL = os.getenv("BRIDGE_URL", "http://afi-whatsapp:3000")
 
 # Modelos Gemini (Cerebro Dual)
 MODEL_SMART = "gemini-2.5-pro"   # Onboarding / Sherlock / Análisis profundo
@@ -50,7 +51,8 @@ MODEL_FAST = "gemini-2.5-flash"  # Operación diaria / respuestas rápidas
 chat_history = []
 # Buffers para uploads múltiples
 upload_buffers: dict[str, list] = {}
-upload_timers: dict[str, asyncio.Task] = {}
+# Generaciones de debounce para reiniciar la espera por usuario
+debounce_generation: dict[str, int] = {}
 # Desactivar WatchFiles: no usar reload en producción; este flag evita ruido si se activa en uvicorn.
 # Inicializar DB
 init_db()
@@ -63,6 +65,17 @@ class WhatsAppMessage(BaseModel):
     timestamp: int
     media_path: str | None = None
     media_mime: str | None = None
+
+
+def _debounce_worker(phone: str, gen: int):
+    """Worker en hilo: espera ventana y procesa si la generación sigue vigente."""
+    time.sleep(4)
+    if debounce_generation.get(phone) != gen:
+        return
+    try:
+        asyncio.run(process_buffered_files(phone))
+    except Exception as e:
+        print(f"🔥 Error en timer de buffer para {phone}: {e}")
 
 
 async def morning_briefing():
@@ -92,7 +105,8 @@ async def check_emails():
     """Escaneo periódico de correos bancarios."""
     print("📧 Scaneando correos bancarios...")
     try:
-        email_ingest.process_emails()
+        # Ejecutar en un hilo para no bloquear el loop principal ni las peticiones HTTP.
+        await asyncio.to_thread(email_ingest.process_emails)
     except Exception as e:
         print(f"❌ Error crítico en check_emails: {e}")
 
@@ -429,6 +443,68 @@ REGLA DE ORO:
         return "Mi conexión neuronal falló. Intenta de nuevo en un momento."
 
 
+# --- Buffer asíncrono de archivos (debounce 4s) ---
+async def process_buffered_files(phone: str):
+    """Se ejecuta cuando el usuario deja de enviar archivos por 4 segundos."""
+    files = upload_buffers.pop(phone, [])
+    if not files:
+        print(f"ℹ️ Buffer vacío para {phone}, nada que procesar.")
+        return
+
+    print(f"🚀 Procesando lote consolidado de {len(files)} archivos para {phone}...")
+
+    all_transactions = []
+    for file in files:
+        try:
+            txs = await asyncio.to_thread(process_file_stream, file["path"], file["mime"])
+            if txs:
+                all_transactions.extend(txs)
+        except Exception as e:
+            print(f"⚠️ Error procesando {file.get('path')}: {e}")
+
+    if not all_transactions:
+        print("⚠️ No se extrajeron transacciones de los archivos.")
+        await send_push_message(phone, "Recibí tus archivos pero no pude extraer movimientos. ¿Puedes reenviarlos en CSV/Excel estándar?")
+        debounce_generation.pop(phone, None)
+        return
+
+    previous_data = get_pending_data(phone) or []
+    if not isinstance(previous_data, list):
+        try:
+            previous_data = list(previous_data)
+        except Exception:
+            previous_data = []
+
+    final_data = previous_data + all_transactions
+    save_pending_data(phone, final_data)
+
+    total_monto = sum(t.get("amount", 0) for t in final_data)
+    count = len(final_data)
+
+    response_text = (
+        f"📚 **Lote Procesado**\n"
+        f"Recibí **{len(files)} archivos** y extraje **{count} movimientos** nuevos.\n\n"
+        f"💰 **Total en Cola:** ${total_monto:,.0f}\n\n"
+        f"**¿Qué hacemos con esto?**\n"
+        f"1️⃣ Cargar a **Nubank**\n"
+        f"2️⃣ Cargar a **Bancolombia**\n"
+        f"3️⃣ Crear nueva cuenta\n\n"
+        f"*Dime el nombre de la cuenta o envía más archivos.*"
+    )
+
+    await send_push_message(phone, response_text)
+    debounce_generation.pop(phone, None)
+
+
+async def send_push_message(phone: str, text: str):
+    """Cliente HTTP para hablar con el endpoint /send de Node."""
+    try:
+        async with httpx.AsyncClient() as client:
+            await client.post(f"{BRIDGE_URL}/send", json={"to": phone, "message": text})
+    except Exception as e:
+        print(f"❌ Error enviando Push a {phone}: {e!r}")
+
+
 @app.get("/")
 def health_check():
     return {"status": "online", "system": "AFI Core"}
@@ -474,21 +550,28 @@ async def receive_message(request: Request):
 
     # --- Buffer de archivos (CSV/Excel/PDF) con debounce 4s ---
     if data.get("hasMedia") and media_payload and media_payload.get("path"):
-        mime = (media_payload.get("mime") or "").lower()
-        is_doc = any(x in mime for x in ["csv", "comma-separated", "sheet", "excel", "ms-excel", "pdf"]) or media_payload.get("path", "").endswith((".csv", ".xlsx", ".xls", ".pdf"))
+        mime_raw = media_payload.get("mime") or ""
+        mime = mime_raw.lower()
+        filename_lower = (media_payload.get("filename") or "").lower()
+        path_lower = media_payload.get("path", "").lower()
+        is_doc = any(x in mime for x in ["csv", "comma-separated", "sheet", "excel", "ms-excel", "pdf"]) or filename_lower.endswith((".csv", ".xlsx", ".xls", ".pdf")) or path_lower.endswith((".csv", ".xlsx", ".xls", ".pdf"))
         if is_doc:
-            # Acumular en buffer
-            upload_buffers.setdefault(user_phone, []).append({"path": media_payload.get("path"), "mime": media_payload.get("mime")})
-            # Resetear timer
-            if user_phone in upload_timers and not upload_timers[user_phone].done():
-                upload_timers[user_phone].cancel()
-            upload_timers[user_phone] = asyncio.create_task(wait_and_run(user_phone))
-            return {"status": "buffered"}
+            filename = media_payload.get("filename") or media_payload.get("path")
+            print(f"⏳ Buffering archivo: {filename}")
+
+            upload_buffers.setdefault(user_phone, []).append({"path": media_payload.get("path"), "mime": mime_raw})
+            gen = debounce_generation.get(user_phone, 0) + 1
+            debounce_generation[user_phone] = gen
+            threading.Thread(target=_debounce_worker, args=(user_phone, gen), daemon=True).start()
+            print(f"⏲️ Timer armado para {user_phone} (gen={gen})")
+
+            return {"status": "buffered", "message": None}
 
         # Otros media (audio/imagen) -> procesar normal
         wisdom_context = retrieve_wisdom(body, top_k=3)
         system_instruction = get_system_instruction(file_summary or "", current_mode or "NORMAL", wisdom_context)
-        reply_text = process_multimodal_request(
+        reply_text = await asyncio.to_thread(
+            process_multimodal_request,
             body,
             media_payload.get("path"),
             media_payload.get("mime") or "application/octet-stream",
@@ -497,7 +580,7 @@ async def receive_message(request: Request):
         )
     else:
         # Flujo Texto Normal
-        reply_text = ai_router(body, user)
+        reply_text = await asyncio.to_thread(ai_router, body, user)
 
     print(f"🧠 Gemini responde: {str(reply_text)[:80]}...")
 
@@ -521,61 +604,9 @@ async def receive_message(request: Request):
 async def start_scheduler():
     try:
         scheduler.add_job(morning_briefing, CronTrigger(hour=7, minute=0))
-        scheduler.add_job(check_emails, CronTrigger(minute="*/15"))
+        # Deshabilitado temporalmente para no bloquear el loop HTTP durante el sprint de buffer.
+        # scheduler.add_job(check_emails, CronTrigger(minute="*/15"))
         scheduler.start()
         print("⏳ Scheduler iniciado: AFI ahora tiene vida propia.")
     except Exception as e:
         print(f"⚠️ Error iniciando scheduler: {e}")
-
-
-# --- Buffer helpers ---
-async def wait_and_run(phone: str):
-    try:
-        await asyncio.sleep(4)
-        await process_buffered_queue(phone)
-    except asyncio.CancelledError:
-        pass
-
-
-async def process_buffered_queue(phone: str):
-    """Procesa los archivos acumulados en el buffer y envía un reporte único."""
-    files = upload_buffers.pop(phone, [])
-    if not files:
-        upload_timers.pop(phone, None)
-        return
-
-    total_txs = []
-    for media in files:
-        try:
-            txs = process_file_stream(media.get("path"), media.get("mime") or "")
-            total_txs.extend(txs)
-        except Exception as e:
-            print(f"⚠️ Error procesando media en buffer: {e}")
-
-    prev = get_pending_data(phone) or []
-    if not isinstance(prev, list):
-        try:
-            prev = list(prev)
-        except Exception:
-            prev = []
-    final_data = prev + total_txs
-    save_pending_data(phone, final_data)
-
-    msg = f"""
-📚 Lote procesado
-Archivos recibidos: {len(files)}
-Movimientos nuevos: {len(total_txs)}
-Total en cola: {len(final_data)}
-
-Cuando quieras cargar, di: "Cargar a la cuenta X".
-"""
-    await send_push(phone, msg)
-    upload_timers.pop(phone, None)
-
-
-async def send_push(phone: str, text: str):
-    try:
-        async with httpx.AsyncClient() as client:
-            await client.post("http://afi-whatsapp:3000/send", json={"to": phone, "message": text}, timeout=10)
-    except Exception as e:
-        print(f"❌ Error Push: {e}")

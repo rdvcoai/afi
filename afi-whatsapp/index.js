@@ -9,6 +9,8 @@ const fs = require('fs');
 const path = require('path');
 const mime = require('mime-types');
 
+const CORE_URL = process.env.CORE_URL || 'http://host.docker.internal:8080';
+
 // Forzar ruta de Chromium si está instalada en el sistema
 process.env.PUPPETEER_EXECUTABLE_PATH = process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium';
 const app = express();
@@ -94,7 +96,7 @@ client.on('message', async msg => {
 
         console.log('📤 Enviando payload a Brain:', JSON.stringify(payload));
 
-        const response = await axios.post('http://afi-core:8080/webhook/whatsapp', payload);
+        const response = await axios.post(`${CORE_URL}/webhook/whatsapp`, payload);
 
         // Si el cerebro responde, contestar al usuario (inyección directa)
         if (response.data && response.data.reply) {
@@ -149,19 +151,34 @@ app.post('/send', async (req, res) => {
         if (!to || !message) return res.status(400).send('Faltan datos');
         if (!isReady) return res.status(503).send('WhatsApp client not ready');
 
-        const chatId = to.includes('@') ? to : `${to}@c.us`;
-        console.log(`📤 Push solicitado para: ${chatId}`);
+        const cleanTo = to.replace('+', '').replace('@c.us', '');
+        const chatId = `${cleanTo}@c.us`;
+        console.log(`📨 Intentando Push a: ${chatId}`);
 
-        // Inyección directa estable (Store.Chat)
+        // Paso 1: intentar precargar el chat (evita "Chat no encontrado")
+        try {
+            const chat = await client.getChatById(chatId);
+            await chat.sendStateTyping();
+        } catch (e) {
+            console.log("⚠️ No pude hacer pre-fetch del chat, intentaré inyección directa...");
+        }
+
+        // Paso 2: Inyección directa con fallback de búsqueda en Store
         await client.pupPage.evaluate(async (dest, text) => {
-            const chat = await window.Store.Chat.get(dest);
-            if (chat) {
-                await chat.sendMessage(text);
-            } else {
-                console.error('Chat no encontrado en Store:', dest);
+            let chat = await window.Store.Chat.get(dest);
+            if (!chat) {
+                const contact = await window.Store.Contact.get(dest);
+                if (contact) {
+                    chat = await window.Store.Chat.find(contact);
+                }
             }
+            if (!chat) {
+                throw new Error(`Chat ${dest} no encontrado en Store web.`);
+            }
+            await chat.sendMessage(text);
         }, chatId, message);
 
+        console.log(`✅ Push exitoso a ${chatId}`);
         res.json({ success: true });
     } catch (e) {
         console.error("❌ Error en Push /send:", e);
