@@ -578,12 +578,9 @@ async def receive_message(request: Request):
             print(f"⏳ Buffering archivo: {filename}")
 
             upload_buffers.setdefault(user_phone, []).append({"path": media_payload.get("path"), "mime": mime_raw})
-            gen = debounce_generation.get(user_phone, 0) + 1
-            debounce_generation[user_phone] = gen
-            threading.Thread(target=_debounce_worker, args=(user_phone, gen), daemon=True).start()
-            print(f"⏲️ Timer armado para {user_phone} (gen={gen})")
-
-            return {"status": "buffered", "message": None}
+            # Procesar de inmediato (sin esperar debounce)
+            await process_buffered_files(user_phone)
+            return {"status": "processed", "message": None}
 
         # Otros media (audio/imagen) -> procesar normal
         wisdom_context = retrieve_wisdom(body, top_k=3)
