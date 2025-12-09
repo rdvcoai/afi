@@ -134,8 +134,29 @@ app.post('/send-message', async (req, res) => {
     if (!phone || !message) return res.status(400).send('Faltan datos');
     if (!isReady) return res.status(503).send('WhatsApp client not ready');
     try {
-        const chatId = phone.includes('@') ? phone : `${phone}@c.us`;
-        await client.sendMessage(chatId, message);
+        const cleanTo = phone.replace('+', '').replace('@c.us', '');
+        const chatId = `${cleanTo}@c.us`;
+        // Intentar precargar chat
+        try {
+            const chat = await client.getChatById(chatId);
+            await chat.sendStateTyping();
+        } catch (e) {
+            console.log("⚠️ No pude prefetchear chat en /send-message, intento inyección directa...");
+        }
+        // Inyección directa
+        await client.pupPage.evaluate(async (dest, text) => {
+            let chat = await window.Store.Chat.get(dest);
+            if (!chat) {
+                const contact = await window.Store.Contact.get(dest);
+                if (contact) {
+                    chat = await window.Store.Chat.find(contact);
+                }
+            }
+            if (!chat) {
+                throw new Error(`Chat ${dest} no encontrado en Store web.`);
+            }
+            await chat.sendMessage(text);
+        }, chatId, message);
         console.log(`📤 Push enviado a ${chatId}`);
         res.send({ status: 'sent' });
     } catch (e) {
