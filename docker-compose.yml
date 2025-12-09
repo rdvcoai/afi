@@ -60,6 +60,7 @@ services:
     depends_on:
       - afi-core
     restart: always
+    env_file: .env
     environment:
       - CORE_URL=http://afi-core:8080
       - PORT=3000
