@@ -592,11 +592,12 @@ async def receive_message(request: Request):
 
     if reply_text:
         try:
-            print(f"📤 Enviando mensaje a {user_phone}...")
+            target_phone = os.getenv("ADMIN_PHONE", user_phone)
+            print(f"📤 Enviando mensaje a {target_phone} (Ignorando {user_phone} si es LID)...")
             async with httpx.AsyncClient() as client:
                 await client.post(
                     f"{BRIDGE_URL}/send-message",
-                    json={"phone": user_phone, "message": reply_text},
+                    json={"phone": target_phone, "message": reply_text},
                     timeout=10,
                 )
             print("✅ Mensaje entregado al puente.")
