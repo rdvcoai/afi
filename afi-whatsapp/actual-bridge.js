@@ -250,4 +250,46 @@ async function syncAccounts(accountNames = []) {
     return created;
 }
 
-module.exports = { addTransaction, getLastTransactions, updateTransaction, searchTransactions, syncAccounts, createCategory, bulkCategorize };
+// Importación masiva de transacciones
+async function importTransactions(accountId, transactions = []) {
+    if (!isConnected) await connect();
+    if (!accountId) throw new Error("accountId requerido para importTransactions");
+    if (!Array.isArray(transactions) || transactions.length === 0) {
+        throw new Error("transactions debe ser un array con elementos");
+    }
+    await ensureBudget(currentBudgetId || DEFAULT_BUDGET_ID);
+    const accounts = await api.getAccounts();
+    const account = accounts.find((a) => a.id === accountId);
+    if (!account) {
+        throw new Error(`Cuenta no encontrada para id: ${accountId}`);
+    }
+    try {
+        const result = await api.importTransactions(accountId, transactions);
+        console.log(`📥 Importación exitosa en cuenta ${accountId}:`, result);
+        return result;
+    } catch (e) {
+        console.error("Error en importTransactions:", e);
+        throw e;
+    }
+}
+
+// Crear cuenta nueva en Actual
+async function createAccount(name, type = "checking", balance = 0) {
+    if (!isConnected) await connect();
+    const typeMap = {
+        credit: "credit",
+        checking: "checking",
+        savings: "savings",
+    };
+    const payload = {
+        name,
+        type: typeMap[type] || "checking",
+        offbudget: false,
+        balance,
+    };
+    const id = await api.createAccount(payload);
+    console.log(`🏦 Cuenta creada: ${name} (ID: ${id})`);
+    return id;
+}
+
+module.exports = { addTransaction, getLastTransactions, updateTransaction, searchTransactions, syncAccounts, createCategory, bulkCategorize, createAccount, importTransactions };

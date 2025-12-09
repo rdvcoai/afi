@@ -34,8 +34,10 @@ services:
       - afi_db
     volumes:
       - ./afi-core:/app
-      - ./data/books:/app/books
+      - ./data/books:/app/data/books
+      - ./data/csv:/app/data/csv
       - ./backups:/app/backups
+      - ./data/media:/app/data/media
       - ./data/media:/app/media
     env_file: .env
     environment:
@@ -56,8 +58,8 @@ services:
     depends_on:
       - afi-core
     volumes:
-      - ./afi-whatsapp/session:/usr/src/app/session
-      - ./data/media:/usr/src/app/media
+      - ./afi-whatsapp/session:/app/data/session
+      - ./data/media:/app/data/media
     env_file: .env
     networks:
       - afi_network

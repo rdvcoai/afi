@@ -1,57 +1,112 @@
+import json
 import os
-import chromadb
-from langchain_community.document_loaders import PyPDFLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+import time
 
-# Rutas dentro del contenedor
-BOOKS_PATH = "/app/books"
-CHROMA_HOST = "chroma-db" # Nombre del servicio docker
-CHROMA_PORT = 8000
+import PyPDF2
+import google.generativeai as genai
 
-def ingest_library():
-    print("📚 AFI: Iniciando Ingestión de Biblioteca Financiera...")
+from database import get_conn
 
-    # Cliente HTTP para hablar con el contenedor de Chroma
-    client = chromadb.HttpClient(host=CHROMA_HOST, port=CHROMA_PORT)
+# Configuración
+BOOKS_DIR = "/app/data/books"
 
-    # Crear colección "sabiduría"
-    collection = client.get_or_create_collection(name="financial_wisdom")
 
-    # Buscar PDFs
-    if not os.path.exists(BOOKS_PATH):
-        print(f"❌ Error: No existe {BOOKS_PATH}")
-        return
+def extract_text_from_pdfs():
+    """Lee todos los PDFs del directorio."""
+    texts = []
+    if not os.path.exists(BOOKS_DIR):
+        print(f"⚠️ Directorio {BOOKS_DIR} no existe.")
+        return []
 
-    pdf_files = [f for f in os.listdir(BOOKS_PATH) if f.endswith('.pdf')]
-    print(f"🔍 Encontrados {len(pdf_files)} libros.")
+    for filename in os.listdir(BOOKS_DIR):
+        if filename.endswith(".pdf"):
+            path = os.path.join(BOOKS_DIR, filename)
+            try:
+                reader = PyPDF2.PdfReader(path)
+                text = ""
+                for page in reader.pages:
+                    page_text = page.extract_text()
+                    if page_text:
+                        # Limpieza de caracteres nulos que rompen Postgres
+                        page_text = page_text.replace("\x00", "")
+                        text += page_text + "\n"
 
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1000,
-        chunk_overlap=200
-    )
+                texts.append({"title": filename, "content": text})
+            except Exception as e:
+                print(f"❌ Error leyendo {filename}: {e}")
+    return texts
 
-    for pdf_file in pdf_files:
-        print(f"📖 Procesando: {pdf_file}...")
-        try:
-            loader = PyPDFLoader(os.path.join(BOOKS_PATH, pdf_file))
-            docs = loader.load_and_split(text_splitter)
 
-            # Preparar datos
-            ids = [f"{pdf_file}_{i}" for i in range(len(docs))]
-            documents = [d.page_content for d in docs]
-            metadatas = [{"source": pdf_file, "page": d.metadata.get('page', 0)} for d in docs]
+def chunk_text(text, chunk_size=1000):
+    return [text[i : i + chunk_size] for i in range(0, len(text), chunk_size)]
 
-            # Insertar en lotes (Chroma maneja batching, pero esto es seguro)
-            collection.add(
-                ids=ids,
-                documents=documents,
-                metadatas=metadatas
-            )
-            print(f"✅ {pdf_file}: {len(docs)} fragmentos guardados.")
-        except Exception as e:
-            print(f"⚠️ Error leyendo {pdf_file}: {e}")
 
-    print("🏁 Ingestión Completa. AFI ahora es sabio.")
+def get_embedding(text):
+    model = "models/text-embedding-004"
+    text = text.replace("\n", " ")
+    try:
+        return genai.embed_content(model=model, content=text, task_type="retrieval_document")["embedding"]
+    except Exception as e:
+        print(f"⚠️ Error API Gemini: {e}. Reintentando en 5s...")
+        time.sleep(5)
+        return genai.embed_content(model=model, content=text, task_type="retrieval_document")["embedding"]
+
+
+def book_exists(cursor, title):
+    """Verifica si el libro ya tiene al menos un vector guardado."""
+    cursor.execute("SELECT 1 FROM financial_wisdom WHERE metadata->>'source' = %s LIMIT 1", (title,))
+    return cursor.fetchone() is not None
+
+
+def ingest_wisdom():
+    print("🧠 Iniciando Ingesta de Sabiduría (Versión Corregida)...")
+
+    books = extract_text_from_pdfs()
+    conn = get_conn()
+    cursor = conn.cursor()
+
+    total_new_chunks = 0
+
+    for book in books:
+        # Check de idempotencia
+        if book_exists(cursor, book["title"]):
+            print(f"⏩ Saltando '{book['title']}' (Ya existe en DB).")
+            continue
+
+        chunks = chunk_text(book["content"])
+        print(f"📚 Procesando '{book['title']}' ({len(chunks)} fragmentos)...")
+
+        for i, chunk in enumerate(chunks):
+            try:
+                vector = get_embedding(chunk)
+
+                # FIX: Usar json.dumps para comillas dobles válidas
+                metadata_json = json.dumps({"source": book["title"]})
+
+                cursor.execute(
+                    """
+                    INSERT INTO financial_wisdom (content, metadata, embedding)
+                    VALUES (%s, %s, %s)
+                    """,
+                    (chunk, metadata_json, vector),
+                )
+
+                total_new_chunks += 1
+
+                # Commit parcial cada 50 chunks para no perder progreso
+                if total_new_chunks % 50 == 0:
+                    conn.commit()
+                    print(f"   🔹 {total_new_chunks} fragmentos guardados...")
+
+            except Exception as e:
+                print(f"❌ Error en fragmento {i} de '{book['title']}': {e}")
+
+        conn.commit()  # Commit final del libro
+        print(f"✅ Libro '{book['title']}' completado.")
+
+    conn.close()
+    print(f"🏁 Ingesta finalizada. Total fragmentos nuevos: {total_new_chunks}")
+
 
 if __name__ == "__main__":
-    ingest_library()
+    ingest_wisdom()

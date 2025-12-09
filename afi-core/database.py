@@ -75,12 +75,19 @@ def init_db():
 
             # SEED: CREAR ADMIN (DIEGO) AUTOMÁTICAMENTE
             # Asegura que tu número siempre tenga rol admin
-            admin_phone = os.getenv("ADMIN_PHONE", "57300.......") # Definir en .env
+            admin_phone = os.getenv("ADMIN_PHONE")  # Definir en .env
+            if admin_phone:
+                cur.execute("""
+                    INSERT INTO users (phone, name, role, profile_status)
+                    VALUES (%s, 'Diego', 'admin', 'incomplete')
+                    ON CONFLICT (phone) DO NOTHING;
+                """, (admin_phone,))
+
+            # Campo de datos pendientes para ingestas (limbo)
             cur.execute("""
-                INSERT INTO users (phone, name, role)
-                VALUES (%s, 'Diego', 'admin')
-                ON CONFLICT (phone) DO NOTHING;
-            """, (admin_phone,))
+                ALTER TABLE user_state
+                ADD COLUMN IF NOT EXISTS pending_file_data JSONB;
+            """)
 
             print("✅ Esquema de Usuarios sincronizado.")
 
@@ -115,3 +122,30 @@ def get_user_context(phone):
             if row:
                 return {"file_context": row[0], "mode": row[1]}
             return None
+
+
+# Helpers para datos pendientes de importación
+def save_pending_data(phone, data):
+    if not phone:
+        return
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("UPDATE user_state SET pending_file_data = %s WHERE phone = %s", (Json(data), phone))
+
+
+def get_pending_data(phone):
+    if not phone:
+        return None
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT pending_file_data FROM user_state WHERE phone = %s", (phone,))
+            row = cur.fetchone()
+            return row[0] if row else None
+
+
+def clear_pending_data(phone):
+    if not phone:
+        return
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("UPDATE user_state SET pending_file_data = NULL WHERE phone = %s", (phone,))

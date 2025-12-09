@@ -1,44 +1,41 @@
 const { Client, LocalAuth } = require('whatsapp-web.js');
-const puppeteer = require('puppeteer-extra');
-const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+// const puppeteer = require('puppeteer-extra');
+// const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const qrcode = require('qrcode-terminal');
 const axios = require('axios');
 const bridge = require('./actual-bridge'); // Importar el puente
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const mime = require('mime-types');
+
+// Forzar ruta de Chromium si está instalada en el sistema
+process.env.PUPPETEER_EXECUTABLE_PATH = process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium';
 const app = express();
 app.use(express.json());
 let isReady = false;
 
-const MEDIA_DIR = process.env.MEDIA_DIR || '/usr/src/app/media';
+const MEDIA_DIR = process.env.MEDIA_DIR || '/app/data/media';
 if (!fs.existsSync(MEDIA_DIR)) {
     fs.mkdirSync(MEDIA_DIR, { recursive: true });
 }
 
-// 1. Activar Modo Sigilo (Anti-Ban Capa 1)
-puppeteer.use(StealthPlugin());
-
-// Configuración del navegador Anti-Huella
-const puppeteerConfig = {
-    headless: true,
-    args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        // '--proxy-server=http://user:pass@host:port' // Activar esto en PROD
-    ]
-};
-
-// 2. Inicializar Cliente con Persistencia
+// 1. Cliente WhatsApp sin stealth (estabilidad primero)
 const client = new Client({
-    authStrategy: new LocalAuth({ dataPath: './session' }),
-    puppeteer: puppeteerConfig,
-    // Usamos User-Agent de Windows real para consistencia
-    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36'
+    authStrategy: new LocalAuth({ dataPath: '/app/data/session' }),
+    puppeteer: {
+        executablePath: '/usr/bin/chromium',
+        headless: true,
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-gpu',
+            '--no-first-run',
+            '--no-zygote',
+        ],
+    },
+    // Sin userAgent custom para minimizar fricción
 });
 
 // Eventos de Conexión
@@ -60,74 +57,67 @@ client.on('message', async msg => {
     console.log(`📩 Mensaje de ${msg.from}: ${msg.body.substring(0, 50)}...`);
 
     try {
-        let mediaPath = null;
-        let mediaMime = null;
+        let mediaPayload = null;
         if (msg.hasMedia) {
             try {
+                console.log(`📥 Descargando media de: ${msg.from}`);
                 const media = await msg.downloadMedia();
                 if (media && media.data) {
-                    const buffer = Buffer.from(media.data, 'base64');
-                    const ext = media.mimetype ? `.${media.mimetype.split('/')[1]}` : '';
-                    const fname = `wa_${Date.now()}${ext}`;
-                    mediaPath = path.join(MEDIA_DIR, fname);
-                    fs.writeFileSync(mediaPath, buffer);
-                    mediaMime = media.mimetype || 'application/octet-stream';
-                    console.log(`💾 Media guardada en ${mediaPath}`);
+                    const extension = mime.extension(media.mimetype) || 'bin';
+                    const filename = `${msg.timestamp}-${msg.id.id}.${extension}`;
+                    const filePath = path.join(MEDIA_DIR, filename);
+                    fs.writeFileSync(filePath, media.data, 'base64');
+                    console.log(`✅ Media guardada en: ${filePath}`);
+                    mediaPayload = {
+                        path: filePath,
+                        mime: media.mimetype || 'application/octet-stream',
+                        filename,
+                    };
                 }
             } catch (e) {
                 console.error("❌ No se pudo guardar media:", e);
             }
         }
 
-        // CORRECCIÓN: Asegurar nombres de campos explícitos y tipos correctos
+        const normalizedFrom = msg.from ? msg.from.replace(/\D/g, '') : msg.from;
+        // Hard override: priorizar ADMIN_PHONE; si no existe, usar el número normalizado
+        const adminNumber = process.env.ADMIN_PHONE ? process.env.ADMIN_PHONE.replace(/\D/g, '') : null;
+        const resolvedNumber = adminNumber || normalizedFrom;
+
         const payload = {
-            // "from" es palabra reservada en algunos contextos, enviamos como string
-            "from_user": msg.from,
-            "body": msg.body || "", // Evitar null
-            "hasMedia": msg.hasMedia || false,
-            "timestamp": msg.timestamp || Math.floor(Date.now() / 1000),
-            "media_path": mediaPath,
-            "media_mime": mediaMime,
+            from_user: resolvedNumber,
+            body: msg.body || "",
+            hasMedia: msg.hasMedia || false,
+            timestamp: msg.timestamp || Math.floor(Date.now() / 1000),
+            media: mediaPayload,
         };
 
         console.log('📤 Enviando payload a Brain:', JSON.stringify(payload));
 
-        // Enviar al Cerebro (Python)
         const response = await axios.post('http://afi-core:8080/webhook/whatsapp', payload);
 
-        // Si el cerebro responde, contestar al usuario
+        // Si el cerebro responde, contestar al usuario (inyección directa)
         if (response.data && response.data.reply) {
             const reply = response.data.reply;
-            const chat = await msg.getChat();
 
-            // Simular comportamiento humano (Escribiendo...)
-            await chat.sendStateTyping();
+            // Chat ID canónico: siempre ADMIN_PHONE (evita LID)
+            const targetPhone = adminNumber || resolvedNumber || normalizedFrom || '573002127123';
+            const chatId = `${targetPhone}@c.us`;
+            console.log(`💉 Inyectando respuesta directa a: ${chatId}`);
 
-            // Retardo aleatorio para evitar detección de máquina (2-4 seg)
-            const delay = Math.floor(Math.random() * 2000) + 2000;
-            await new Promise(r => setTimeout(r, delay));
-
-            // DETECTOR DE COMANDOS INTERNOS
-            // Si la respuesta empieza con "CMD:TRANSACTION", es una orden para el puente
-            if (reply.startsWith("CMD:TRANSACTION")) {
-                try {
-                    const jsonStr = reply.replace("CMD:TRANSACTION", "").trim();
-                    const data = JSON.parse(jsonStr);
-                    // data = { budget_id, date, amount, payee, notes }
-
-                    console.log('💰 Comando de transacción detectado:', data);
-
-                    const { budget_id, ...tx } = data;
-                    await bridge.addTransaction(tx, budget_id);
-
-                    await client.sendMessage(msg.from, `✅ Registrado: ${data.amount} COP en ${data.payee}\n\n${data.notes}`);
-                } catch (e) {
-                    console.error("❌ Error en puente Actual:", e);
-                    await client.sendMessage(msg.from, "❌ Error guardando en la bóveda. Verificar logs.");
-                }
-            } else {
-                // Respuesta normal de texto
-                await client.sendMessage(msg.from, reply);
+            try {
+                // Inyección directa en la página para evitar validaciones LID de la librería
+                await client.pupPage.evaluate(async (to, body) => {
+                    const chat = await window.Store.Chat.get(to);
+                    if (!chat) {
+                        console.error("Chat no encontrado en Store:", to);
+                        return;
+                    }
+                    await chat.sendMessage(body);
+                }, chatId, reply);
+                console.log(`📤 Respuesta inyectada correctamente.`);
+            } catch (e) {
+                console.error("❌ Falló la inyección directa:", e.message);
             }
         }
 
@@ -197,6 +187,19 @@ app.post('/transaction/update', async (req, res) => {
     }
 });
 
+// Endpoint: crear cuenta directa
+app.post('/accounts', async (req, res) => {
+    try {
+        const { name, type, balance } = req.body || {};
+        if (!name) return res.status(400).send('Falta nombre');
+        const id = await bridge.createAccount(name, type || "checking", balance || 0);
+        res.json({ success: true, id });
+    } catch (e) {
+        console.error("❌ Error creando cuenta:", e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // Endpoint: sincronizar cuentas detectadas
 app.post('/accounts/sync', async (req, res) => {
     try {
@@ -205,6 +208,19 @@ app.post('/accounts/sync', async (req, res) => {
         res.json({ created });
     } catch (e) {
         res.status(500).send(e.message);
+    }
+});
+
+// Endpoint: importación masiva de transacciones
+app.post('/transactions/import', async (req, res) => {
+    try {
+        const { accountId, transactions } = req.body || {};
+        if (!accountId || !transactions) return res.status(400).send('Faltan datos (accountId, transactions)');
+        const result = await bridge.importTransactions(accountId, transactions);
+        res.json({ success: true, result });
+    } catch (e) {
+        console.error("❌ Error importando transacciones:", e);
+        res.status(500).json({ error: e.message });
     }
 });
 

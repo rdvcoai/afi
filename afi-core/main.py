@@ -1,6 +1,7 @@
 import os
 import json
 import datetime
+import time
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
 import google.generativeai as genai
@@ -9,8 +10,19 @@ from apscheduler.triggers.cron import CronTrigger
 import httpx
 import email_ingest
 import identity_manager
-from tools import TOOLS_SCHEMA, get_financial_audit, create_category_tool, categorize_payees_tool
-from database import init_db, get_user_context, save_user_context, get_conn
+from tools import (
+    TOOLS_SCHEMA,
+    get_financial_audit,
+    create_category_tool,
+    categorize_payees_tool,
+    create_account_tool,
+    find_and_import_history_tool,
+    import_history_from_file_tool,
+    complete_onboarding_tool,
+    confirm_import_tool,
+)
+from database import init_db, get_user_context, save_user_context, get_conn, save_pending_data, get_pending_data
+from data_engine import process_file_stream
 from profile_manager import get_user_profile, update_financial_goals
 
 # Inicialización
@@ -28,6 +40,10 @@ else:
 ADMIN_PHONE = os.getenv("ADMIN_PHONE")
 WHATSAPP_PUSH_URL = "http://afi-whatsapp:3000/send-message"
 BRIDGE_URL = "http://afi-whatsapp:3000"
+
+# Modelos Gemini (Cerebro Dual)
+MODEL_SMART = "gemini-2.5-pro"   # Onboarding / Sherlock / Análisis profundo
+MODEL_FAST = "gemini-2.5-flash"  # Operación diaria / respuestas rápidas
 
 # Memoria de chat agéntico
 chat_history = []
@@ -111,6 +127,20 @@ def execute_function(name, args):
             except Exception:
                 keywords = [str(keywords)]
         return categorize_payees_tool(py_args.get("category_name"), keywords)
+    if name == "create_account_tool":
+        return create_account_tool(py_args.get("account_name"), py_args.get("account_type", "checking"))
+    if name == "find_and_import_history_tool":
+        return find_and_import_history_tool(py_args.get("account_name"))
+    if name == "import_history_from_file_tool":
+        # aceptar account_name o account_id como alias
+        return import_history_from_file_tool(
+            account=py_args.get("account_name") or py_args.get("account_id"),
+            file_name_in_server=py_args.get("file_name_in_server") or py_args.get("file_name") or py_args.get("file"),
+        )
+    if name == "complete_onboarding_tool":
+        return complete_onboarding_tool(py_args.get("summary"))
+    if name == "confirm_import_tool":
+        return confirm_import_tool(py_args.get("target_account_name"))
     return "Error: Tool not found"
 
 
@@ -188,29 +218,61 @@ def retrieve_wisdom(query: str, top_k: int = 3) -> str:
         return ""
 
 
-def process_multimodal_request(user_text: str, media_path: str, media_mime: str, system_instruction: str) -> str:
-    """Procesa audio/imagen con Gemini 2.5 Flash."""
+def process_multimodal_request(user_text: str, media_path: str, media_mime: str, system_instruction: str, phone: str) -> str:
+    """Procesa audio/imagen/documentos con Gemini 2.5 Flash, corrigiendo MIME y esperando procesamiento."""
     print(f"👁️ Procesando archivo: {media_path} ({media_mime})")
+    if not os.path.exists(media_path):
+        return f"⚠️ Error técnico: El archivo no se encuentra en {media_path}. Verifica volúmenes."
+
+    # Caso documento (CSV/Excel): procesar localmente y guardar en limbo
+    mime_lower = (media_mime or "").lower()
+    if (
+        any(x in mime_lower for x in ["csv", "comma-separated", "sheet", "excel", "ms-excel"])
+        or media_path.endswith((".csv", ".xlsx", ".xls"))
+        or (user_text and ".csv" in user_text.lower())
+    ):
+        print("📄 Documento financiero recibido.")
+        transactions = process_file_stream(media_path, media_mime or "")
+        if not transactions:
+            return "❌ Recibí el archivo pero no pude leer columnas de Fecha y Monto. ¿Es un formato estándar?"
+        save_pending_data(phone, transactions)
+        count = len(transactions)
+        total = sum(t.get("amount", 0) for t in transactions)
+        return f"""✅ Análisis exitoso.
+He extraído **{count} movimientos** (Total neto: ${total:,.0f}).
+¿A qué cuenta pertenecen estos datos? Ej: "Es mi Nubank", "Crea una cuenta llamada Ahorros". """
+
+    mime_to_use = media_mime or "application/octet-stream"
+    if "ogg" in mime_to_use or media_path.endswith(".ogg"):
+        mime_to_use = "audio/ogg"
+    elif "jpeg" in mime_to_use or "jpg" in mime_to_use:
+        mime_to_use = "image/jpeg"
+
     try:
-        uploaded_file = genai.upload_file(media_path, mime_type=media_mime)
+        uploaded_file = genai.upload_file(media_path, mime_type=mime_to_use)
+        while uploaded_file.state.name == "PROCESSING":
+            time.sleep(1)
+            uploaded_file = genai.get_file(uploaded_file.name)
+
+        if uploaded_file.state.name == "FAILED":
+            return "⚠️ Google no pudo procesar el formato del archivo."
+
         multimodal_prompt = f"""
-CONTEXTO DEL USUARIO (Texto acompañante): "{user_text}"
+CONTEXTO USUARIO: "{user_text}"
+ARCHIVO: Analiza este audio/imagen.
+- Si es AUDIO: Transcribe y extrae intención (Gasto, Consulta).
+- Si es IMAGEN: Extrae datos del recibo.
 
-TAREA:
-Analiza este archivo (Audio o Imagen).
-1. Si es AUDIO: Transcribe lo que dice y extrae la intención (Gasto, Consulta, Reflexión).
-2. Si es IMAGEN: Extrae los datos financieros (Comercio, Total, Fecha).
-
-ACCION:
-Si detectas un gasto, actúa inmediatamente invocando las herramientas necesarias.
-Si es una consulta, responde en Español.
+ACCIÓN: Ejecuta la herramienta necesaria o responde.
 """
+
         model = genai.GenerativeModel("gemini-2.5-flash", system_instruction=system_instruction, tools=TOOLS_SCHEMA)
         response = model.generate_content([multimodal_prompt, uploaded_file])
         return response.text if response else "⚠️ No se obtuvo respuesta del modelo."
+
     except Exception as e:
         print(f"❌ Error multimodal: {e}")
-        return "⚠️ No pude procesar el archivo. Intenta de nuevo."
+        return "⚠️ Error procesando el archivo multimedia. Por favor intenta con texto por ahora."
 
 
 def ai_router(text: str, user_context: dict) -> str:
@@ -225,36 +287,49 @@ def ai_router(text: str, user_context: dict) -> str:
         state = get_user_context(phone)  # Memoria técnica (vectores, csv)
 
         file_summary = state.get("file_context") if state else ""
+        current_mode = state.get("mode") if state else "NORMAL"
+
+        admin_incomplete = (
+            user_profile
+            and user_profile.get("role") == "admin"
+            and user_profile.get("status") == "incomplete"
+        )
 
         # 2. LOGICA DE MODO (SHERLOCK VS CFO)
         # Si es el Admin, no tiene resumen de archivos y su perfil está incompleto -> MODO SHERLOCK
-        if user_profile and user_profile['role'] == 'admin' and not file_summary and user_profile['status'] == 'incomplete':
+        if admin_incomplete:
+            file_summary = ""
+            current_mode = "SHERLOCK"
             system_instruction = """
-Eres AFI, el Asesor Financiero Personal de Diego.
+Eres AFI, un Arquitecto Financiero Privado de alto nivel.
+Estás iniciando la relación con tu cliente. NO ASUMAS NADA. Tu trabajo es descubrir su realidad financiera.
 
-SITUACIÓN ACTUAL:
-Estás en la fase de 'Discovery' (Investigación). No tienes datos históricos (CSVs) ni un perfil claro.
+OBJETIVO: Construir el "Mapa de Flujo de Dinero" del usuario.
 
-OBJETIVO:
-Entrevistar a Diego para construir su 'Perfil Base' en 3 pasos rápidos.
+PROTOCOLO DE ENTREVISTA (Conversacional, no interrogatorio):
 
-REGLAS DE INTERACCIÓN:
-1. NO pidas subir archivos todavía. Queremos conversar.
-2. Haz una pregunta a la vez. Sé conciso.
-3. Pregunta clave 1: "¿Cuáles son tus 3 gastos fijos más grandes?"
-4. Pregunta clave 2: "¿Qué deuda te quita el sueño hoy?"
-5. Pregunta clave 3: "¿Cuánto quieres ahorrar al mes?"
+1. MODELO MENTAL (La Estrategia):
+   - Pregunta clave: "¿Cómo te gusta operar tu dinero? ¿Eres 'Totalero' (todo a Tarjeta de Crédito para ganar puntos y pagar a fin de mes) o prefieres usar Débito/Efectivo?"
+   - Por qué importa: Si usa TC, las transferencias a la tarjeta NO son gastos, son pagos.
 
-Cuando tengas las respuestas, confírmalas y di: "Perfil creado. Empecemos a registrar."
+2. EL MAPA DE CUENTAS (La Infraestructura):
+   - Identifica la cuenta "Hub" (ingresos) y las cuentas "Spoke" (gastos).
+   - Pregunta: "¿En qué banco recibes tus ingresos principales y qué otras cuentas o billeteras usas?"
+
+3. EL DOLOR (Prioridades):
+   - Pregunta: "¿Tienes alguna meta urgente (viaje, compra) o alguna deuda que te quite el sueño?"
+
+REGLA DE ORO:
+- Si el usuario subió un CSV, analízalo PERO confirma tus sospechas con él. "Veo muchos movimientos en Nubank, ¿esa es tu tarjeta principal?"
+- Habla siempre en Español Latinoamericano.
+ - HERRAMIENTA ESPECIAL ADMIN: Puedes leer archivos en /app/data/csv. Si el usuario te pide cargar historia (ej: Nubank), pregunta el nombre del archivo o sugiérelo y usa import_history_from_file_tool con el ID de la cuenta.
 """
         else:
             # MODO NORMAL (CFO) - Usa la memoria y herramientas existentes
-            current_mode = "NORMAL"
-            if state:
-                current_mode = state.get("mode") or "NORMAL"
+            current_mode = current_mode or "NORMAL"
 
             # Autorecuperación de contexto (Si la DB está vacía pero hay archivo)
-            if not file_summary:
+            if not admin_incomplete and not file_summary:
                 print("🔍 Contexto vacío. Intentando leer auditoría física...")
                 try:
                     raw_audit = get_financial_audit()  # Lee CSV
@@ -268,9 +343,17 @@ Cuando tengas las respuestas, confírmalas y di: "Perfil creado. Empecemos a reg
             wisdom_context = retrieve_wisdom(text)
             system_instruction = get_system_instruction(file_summary, current_mode, wisdom_context)
 
+        # 2b. Selección dinámica de modelo
+        if current_mode in ("SHERLOCK", "ONBOARDING"):
+            target_model = MODEL_SMART
+            print(f"🧠 Modo Arquitecto Activado ({target_model})")
+        else:
+            target_model = MODEL_FAST
+            print(f"⚡ Modo Operativo Activado ({target_model})")
+
         # 3. INVOCAR GEMINI
         model = genai.GenerativeModel(
-            "gemini-2.5-flash",
+            target_model,
             tools=TOOLS_SCHEMA,
             system_instruction=system_instruction,
         )
@@ -342,7 +425,7 @@ async def receive_message(request: Request):
     data = await request.json()
     user_phone = data.get("from_user")
     body = data.get("body", "")
-    print(f"📥 Brain recibió de {user_phone}: {body}")
+    print(f"📥 Brain recibió de {user_phone}: {body} | hasMedia={data.get('hasMedia')} media={data.get('media')}")
 
     user = identity_manager.get_user_session(user_phone or "")
     if not user:
@@ -383,6 +466,7 @@ async def receive_message(request: Request):
             media_payload.get("path"),
             media_payload.get("mime") or "application/octet-stream",
             system_instruction,
+            user_phone,
         )
     else:
         # Flujo Texto Normal
