@@ -466,11 +466,11 @@ async def process_buffered_files(phone: str):
         try:
             txs = await asyncio.to_thread(process_file_stream, file["path"], file["mime"])
             processed_rows += len(txs) if txs else 0
-            if processed_rows and processed_rows % 300 == 0:
-                await send_push_message(
-                    target_phone,
-                    f"⏳ Sigo analizando... llevo {processed_rows} movimientos extraídos.",
-                )
+            # Heartbeat por lote: cada vez que procesamos un archivo grande, avisamos progreso
+            await send_push_message(
+                target_phone,
+                f"⏳ Sigo analizando... llevo {processed_rows} movimientos extraídos (archivo: {file.get('filename','')}).",
+            )
             if txs:
                 all_transactions.extend(txs)
         except Exception as e:
