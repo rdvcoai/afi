@@ -1,0 +1,74 @@
+[
+  {
+    "account_name": "DAVIVIENDA Crediexpress 590047390050353-2",
+    "account_type": "credit",
+    "transactions": [
+      {
+        "date": "2024-12-04",
+        "amount": 1856175.48,
+        "payee_name": "ADELANTO CUOTA",
+        "notes": "Doc: 00003629"
+      },
+      {
+        "date": "2025-01-05",
+        "amount": 2008000.0,
+        "payee_name": "ADELANTO CUOTA",
+        "notes": "Doc: 00185095"
+      },
+      {
+        "date": "2025-02-04",
+        "amount": 2008000.0,
+        "payee_name": "ADELANTO CUOTA",
+        "notes": "Doc: 00543506"
+      },
+      {
+        "date": "2025-03-04",
+        "amount": 2008000.0,
+        "payee_name": "ADELANTO CUOTA",
+        "notes": "Doc: 00185731"
+      },
+      {
+        "date": "2025-04-11",
+        "amount": 2008000.0,
+        "payee_name": "ADELANTO CUOTA",
+        "notes": "Doc: 00055825"
+      },
+      {
+        "date": "2025-05-05",
+        "amount": 2008000.0,
+        "payee_name": "ADELANTO CUOTA",
+        "notes": "Doc: 00175187"
+      },
+      {
+        "date": "2025-06-05",
+        "amount": 2008000.0,
+        "payee_name": "ADELANTO CUOTA",
+        "notes": "Doc: 00282454"
+      },
+      {
+        "date": "2025-07-08",
+        "amount": 2008000.0,
+        "payee_name": "ADELANTO CUOTA",
+        "notes": "Doc: 00520527"
+      },
+      {
+        "date": "2025-08-05",
+        "amount": 2008000.0,
+        "payee_name": "ADELANTO CUOTA",
+        "notes": "Doc: 00222770"
+      },
+      {
+        "date": "2025-09-03",
+        "amount": 2008000.0,
+        "payee_name": "ADELANTO CUOTA",
+        "notes": "Doc: 00224075"
+      },
+      {
+        "date": "2025-10-05",
+        "amount": 2008000.0,
+        "payee_name": "ADELANTO CUOTA",
+        "notes": "Doc: 00591504"
+      }
+    ]
+  }
+]

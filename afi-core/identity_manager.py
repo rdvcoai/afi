@@ -1,18 +1,18 @@
 import os
 
-# Configuración de Perfiles
-USERS = {
-    os.getenv("ADMIN_PHONE"): {
-        "name": "Diego",
-        "role": "ADMIN",
-        "personal_id": os.getenv("ACTUAL_BUDGET_ID_MAIN") or os.getenv("ACTUAL_BUDGET_ID"),
+# Whitelist de usuarios autorizados
+AUTHORIZED_PHONES = {
+    "3002127123": {
+        "name": "Usuario1",
+        "role": "ADMIN",  # Asumiendo que el primero es el administrador principal
+        "personal_id": os.getenv("ACTUAL_BUDGET_ID_MAIN"),
         "household_id": os.getenv("ACTUAL_BUDGET_ID_HOUSEHOLD"),
         "persona": "CFO Estratégico",
     },
-    os.getenv("SPOUSE_PHONE"): {
-        "name": "Esposa",
-        "role": "PARTNER",
-        "personal_id": os.getenv("ACTUAL_BUDGET_ID_SPOUSE"),
+    "3113570340": {
+        "name": "Usuario2",
+        "role": "USER",
+        "personal_id": os.getenv("ACTUAL_BUDGET_ID_SPOUSE"), # Opcional, si corresponde
         "household_id": os.getenv("ACTUAL_BUDGET_ID_HOUSEHOLD"),
         "persona": "Coach Empático",
     },
@@ -20,21 +20,18 @@ USERS = {
 
 
 def get_user_session(phone_raw: str):
-    """Normaliza número y devuelve la sesión de usuario configurada."""
+    """Normaliza número y devuelve la sesión de usuario configurada si está autorizado."""
     # Dejar solo dígitos para soportar variaciones (@c.us, @lid, +57, etc.)
     phone = "".join(ch for ch in phone_raw if ch.isdigit())
-    if phone in USERS:
-        return USERS[phone]
+    
+    # Check if the normalized phone number is in the whitelist
+    if phone in AUTHORIZED_PHONES:
+        return AUTHORIZED_PHONES[phone]
+    
+    # Fallback for partial matches (e.g., if a number comes in as 57300... or 300...)
+    # This assumes the whitelist numbers are full international format or expected local format
+    for auth_phone, user_data in AUTHORIZED_PHONES.items():
+        if phone.endswith(auth_phone) or auth_phone.endswith(phone):
+            return user_data
 
-    # Coincidencia flexible por últimos 10 dígitos
-    for k, v in USERS.items():
-        if not k:
-            continue
-        if phone.endswith(k[-10:]) or k.endswith(phone[-10:]):
-            return v
-
-    # Fallback: devolver el primer perfil definido (evita bloqueo si WA entrega IDs raros)
-    for v in USERS.values():
-        if v:
-            return v
     return None

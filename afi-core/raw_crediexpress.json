@@ -1,0 +1,309 @@
+{
+  "crediexpress": {
+    "banco": "DAVIVIENDA",
+    "producto": "Extracto Crédito",
+    "numero_credito": "590047390050353-2",
+    "cliente": {
+      "nombre": "DIEGO ANDRES HERNANDEZ GARCIA",
+      "email": "diegohernandez@rdv.com.co",
+      "direccion": "CL 16 28 A 83",
+      "ciudad": "BOGOTA D.C."
+    },
+    "extractos": [
+      {
+        "periodo_pago": "ENERO/2025",
+        "archivo_origen": "Crediexpress/Extracto-13.pdf",
+        "fecha_limite_pago": "Ene. 07/2025",
+        "periodo_liquidado": "Nov. 19/2024 - Ene. 07/2025",
+        "dias_liquidados": 49,
+        "valor_a_pagar": 2008000.00,
+        "cuotas_canceladas": 1,
+        "cuotas_pendientes": 59,
+        "tasa_interes_ea": "13.89%",
+        "resumen_anterior": {
+          "periodo_movimientos": "Nov. 19/2024 a Nov. 19/2024",
+          "saldo_anterior": 84482210.00,
+          "total_aplicado": 0.00,
+          "nuevo_saldo": 84001926.00
+        },
+        "movimientos": []
+      },
+      {
+        "periodo_pago": "FEBRERO/2025",
+        "archivo_origen": "Crediexpress/Extracto-12.pdf",
+        "fecha_limite_pago": "Feb. 05/2025",
+        "periodo_liquidado": "Ene. 05/2025 - Feb. 05/2025",
+        "dias_liquidados": 31,
+        "valor_a_pagar": 193000.00,
+        "cuotas_canceladas": 2,
+        "cuotas_pendientes": 58,
+        "tasa_interes_ea": "13.89%",
+        "resumen_anterior": {
+          "periodo_movimientos": "Nov. 19/2024 a Ene. 05/2025",
+          "saldo_anterior": 84482210.00,
+          "total_aplicado": 2468661.71,
+          "intereses_corrientes": 1381640.58,
+          "abonos_capital": 1005355.13,
+          "nuevo_saldo": 81718355.08
+        },
+        "movimientos": [
+          {
+            "fecha": "04 Dic 2024",
+            "descripcion": "ADELANTO CUOTA",
+            "documento": "00003629",
+            "valor": 1856175.48
+          },
+          {
+            "fecha": "05 Ene 2025",
+            "descripcion": "ADELANTO CUOTA",
+            "documento": "00185095",
+            "valor": 2008000.00
+          }
+        ]
+      },
+      {
+        "periodo_pago": "MARZO/2025",
+        "archivo_origen": "Crediexpress/Extracto-11.pdf",
+        "fecha_limite_pago": "Mar. 05/2025",
+        "periodo_liquidado": "Feb. 05/2025 - Mar. 05/2025",
+        "dias_liquidados": 28,
+        "valor_a_pagar": 173000.00,
+        "cuotas_canceladas": 3,
+        "cuotas_pendientes": 57,
+        "tasa_interes_ea": "13.89%",
+        "resumen_anterior": {
+          "periodo_movimientos": "Ene. 05/2025 a Feb. 05/2025",
+          "saldo_anterior": 83476854.87,
+          "total_aplicado": 1987981.36,
+          "intereses_corrientes": 890004.37,
+          "abonos_capital": 1016310.99,
+          "nuevo_saldo": 80706568.95
+        },
+        "movimientos": [
+          {
+            "fecha": "04 Feb 2025",
+            "descripcion": "ADELANTO CUOTA",
+            "documento": "00543506",
+            "valor": 2008000.00
+          }
+        ]
+      },
+      {
+        "periodo_pago": "ABRIL/2025",
+        "archivo_origen": "Crediexpress/Extracto-9.pdf",
+        "fecha_limite_pago": "Abr. 07/2025",
+        "periodo_liquidado": "Mar. 05/2025 - Abr. 07/2025",
+        "dias_liquidados": 33,
+        "valor_a_pagar": 153000.00,
+        "cuotas_canceladas": 4,
+        "cuotas_pendientes": 56,
+        "tasa_interes_ea": "13.89%",
+        "resumen_anterior": {
+          "periodo_movimientos": "Feb. 05/2025 a Mar. 05/2025",
+          "saldo_anterior": 82460543.88,
+          "total_aplicado": 1987742.60,
+          "intereses_corrientes": 878690.36,
+          "abonos_capital": 1027386.24,
+          "nuevo_saldo": 79658925.31
+        },
+        "movimientos": [
+          {
+            "fecha": "04 Mar 2025",
+            "descripcion": "ADELANTO CUOTA",
+            "documento": "00185731",
+            "valor": 2008000.00
+          }
+        ]
+      },
+      {
+        "periodo_pago": "MAYO/2025",
+        "archivo_origen": "Crediexpress/Extracto-10.pdf",
+        "fecha_limite_pago": "May. 05/2025",
+        "periodo_liquidado": "Abr. 05/2025 - May. 05/2025",
+        "dias_liquidados": 30,
+        "valor_a_pagar": 2141000.00,
+        "cuotas_canceladas": 5,
+        "cuotas_pendientes": 55,
+        "tasa_interes_ea": "13.89%",
+        "tasa_interes_mora": "25.49%",
+        "resumen_anterior": {
+          "periodo_movimientos": "Mar. 05/2025 a Abr. 05/2025",
+          "saldo_anterior": 81433157.64,
+          "total_aplicado": 1855898.33,
+          "intereses_corrientes": 868054.13,
+          "abonos_capital": 906178.20,
+          "nuevo_saldo": 80666757.14
+        },
+        "movimientos": []
+      },
+      {
+        "periodo_pago": "JUNIO/2025",
+        "archivo_origen": "Crediexpress/Extracto-7.pdf",
+        "fecha_limite_pago": "Jun. 05/2025",
+        "periodo_liquidado": "May. 05/2025 - Jun. 05/2025",
+        "dias_liquidados": 31,
+        "valor_a_pagar": 117000.00,
+        "cuotas_canceladas": 6,
+        "cuotas_pendientes": 54,
+        "tasa_interes_ea": "13.89%",
+        "resumen_anterior": {
+          "periodo_movimientos": "Abr. 05/2025 a May. 05/2025",
+          "saldo_anterior": 80526979.44,
+          "total_aplicado": 2124447.38,
+          "intereses_corrientes": 860477.27,
+          "abonos_capital": 1182304.11,
+          "nuevo_saldo": 77534788.71
+        },
+        "movimientos": [
+          {
+            "fecha": "11 Abr 2025",
+            "descripcion": "ADELANTO CUOTA",
+            "documento": "00055825",
+            "valor": 2008000.00
+          },
+          {
+            "fecha": "05 May 2025",
+            "descripcion": "ADELANTO CUOTA",
+            "documento": "00175187",
+            "valor": 2008000.00
+          }
+        ]
+      },
+      {
+        "periodo_pago": "JULIO/2025",
+        "archivo_origen": "Crediexpress/Extracto-6.pdf",
+        "fecha_limite_pago": "Jul. 07/2025",
+        "periodo_liquidado": "Jun. 05/2025 - Jul. 07/2025",
+        "dias_liquidados": 32,
+        "valor_a_pagar": 97000.00,
+        "cuotas_canceladas": 7,
+        "cuotas_pendientes": 53,
+        "tasa_interes_ea": "13.89%",
+        "resumen_anterior": {
+          "periodo_movimientos": "May. 05/2025 a Jun. 05/2025",
+          "saldo_anterior": 79344675.33,
+          "total_aplicado": 1987913.78,
+          "intereses_corrientes": 844906.36,
+          "abonos_capital": 1061341.42,
+          "nuevo_saldo": 76453361.07
+        },
+        "movimientos": [
+          {
+            "fecha": "05 Jun 2025",
+            "descripcion": "ADELANTO CUOTA",
+            "documento": "00282454",
+            "valor": 2008000.00
+          }
+        ]
+      },
+      {
+        "periodo_pago": "AGOSTO/2025",
+        "archivo_origen": "Crediexpress/Extracto-5.pdf",
+        "fecha_limite_pago": "Ago. 05/2025",
+        "periodo_liquidado": "Jul. 05/2025 - Ago. 05/2025",
+        "dias_liquidados": 31,
+        "valor_a_pagar": 2085000.00,
+        "cuotas_canceladas": 8,
+        "cuotas_pendientes": 52,
+        "tasa_interes_ea": "13.89%",
+        "tasa_interes_mora": "24.75%",
+        "resumen_anterior": {
+          "periodo_movimientos": "Jun. 05/2025 a Jul. 05/2025",
+          "saldo_anterior": 78283333.91,
+          "total_aplicado": 1911638.84,
+          "intereses_corrientes": 833120.58,
+          "abonos_capital": 996852.26,
+          "nuevo_saldo": 77422156.79
+        },
+        "movimientos": []
+      },
+      {
+        "periodo_pago": "SEPTIEMBRE/2025",
+        "archivo_origen": "Crediexpress/Extracto-4.pdf",
+        "fecha_limite_pago": "Sep. 05/2025",
+        "periodo_liquidado": "Ago. 05/2025 - Sep. 05/2025",
+        "dias_liquidados": 31,
+        "valor_a_pagar": 58000.00,
+        "cuotas_canceladas": 9,
+        "cuotas_pendientes": 51,
+        "tasa_interes_ea": "13.89%",
+        "resumen_anterior": {
+          "periodo_movimientos": "Jul. 05/2025 a Ago. 05/2025",
+          "saldo_anterior": 77286481.65,
+          "total_aplicado": 2065518.45,
+          "intereses_corrientes": 823197.94,
+          "abonos_capital": 1160654.51,
+          "nuevo_saldo": 74257011.59
+        },
+        "movimientos": [
+          {
+            "fecha": "08 Jul 2025",
+            "descripcion": "ADELANTO CUOTA",
+            "documento": "00520527",
+            "valor": 2008000.00
+          },
+          {
+            "fecha": "05 Ago 2025",
+            "descripcion": "ADELANTO CUOTA",
+            "documento": "00222770",
+            "valor": 2008000.00
+          }
+        ]
+      },
+      {
+        "periodo_pago": "OCTUBRE/2025",
+        "archivo_origen": "Crediexpress/Extracto-3.pdf",
+        "fecha_limite_pago": "Oct. 06/2025",
+        "periodo_liquidado": "Sep. 05/2025 - Oct. 06/2025",
+        "dias_liquidados": 31,
+        "valor_a_pagar": 36000.00,
+        "cuotas_canceladas": 10,
+        "cuotas_pendientes": 50,
+        "tasa_interes_ea": "13.89%",
+        "resumen_anterior": {
+          "periodo_movimientos": "Ago. 05/2025 a Sep. 05/2025",
+          "saldo_anterior": 76125827.14,
+          "total_aplicado": 1985867.00,
+          "intereses_corrientes": 807782.19,
+          "abonos_capital": 1096418.81,
+          "nuevo_saldo": 73138459.78
+        },
+        "movimientos": [
+          {
+            "fecha": "03 Sep 2025",
+            "descripcion": "ADELANTO CUOTA",
+            "documento": "00224075",
+            "valor": 2008000.00
+          }
+        ]
+      },
+      {
+        "periodo_pago": "NOVIEMBRE/2025",
+        "archivo_origen": "Crediexpress/Extracto-2.pdf",
+        "fecha_limite_pago": "Nov. 05/2025",
+        "periodo_liquidado": "Oct. 05/2025 - Nov. 05/2025",
+        "dias_liquidados": 31,
+        "valor_a_pagar": 15000.00,
+        "cuotas_canceladas": 11,
+        "cuotas_pendientes": 49,
+        "tasa_interes_ea": "13.89%",
+        "resumen_anterior": {
+          "periodo_movimientos": "Sep. 05/2025 a Oct. 05/2025",
+          "saldo_anterior": 75029408.33,
+          "total_aplicado": 1986969.85,
+          "intereses_corrientes": 796936.81,
+          "abonos_capital": 1108367.04,
+          "nuevo_saldo": 72034215.00
+        },
+        "movimientos": [
+          {
+            "fecha": "05 Oct 2025",
+            "descripcion": "ADELANTO CUOTA",
+            "documento": "00591504",
+            "valor": 2008000.00
+          }
+        ]
+      }
+    ]
+  }
+}

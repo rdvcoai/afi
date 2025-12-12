@@ -10,9 +10,12 @@ DB_PASS = os.getenv("DB_PASS", "password")
 DB_NAME = os.getenv("DB_NAME", "afi_brain")
 
 
-def get_conn():
+def get_conn(user_id=None):
     conn = psycopg2.connect(host=DB_HOST, user=DB_USER, password=DB_PASS, database=DB_NAME)
     conn.autocommit = True
+    if user_id is not None:
+        with conn.cursor() as cur:
+            cur.execute("SET app.current_user_id = %s;", (str(user_id),))
     return conn
 
 
@@ -60,11 +63,18 @@ def init_db():
                 );
                 """
             )
+            cur.execute(
+                """
+                CREATE INDEX IF NOT EXISTS idx_financial_wisdom_embedding
+                ON financial_wisdom USING ivfflat (embedding vector_cosine_ops);
+                """
+            )
 
             # NUEVA TABLA: USUARIOS (PERFIL PERSONAL)
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS users (
-                    phone TEXT PRIMARY KEY,
+                    id SERIAL PRIMARY KEY,
+                    phone TEXT UNIQUE NOT NULL,
                     name TEXT,
                     role TEXT DEFAULT 'user', -- 'admin' para Diego
                     profile_status TEXT DEFAULT 'incomplete', -- 'incomplete', 'active'
@@ -73,14 +83,38 @@ def init_db():
                 );
             """)
 
-            # SEED: CREAR ADMIN (DIEGO) AUTOMÁTICAMENTE
-            # Asegura que tu número siempre tenga rol admin
+            # Migrar esquema legado (phone como PK) a modelo con id entero
+            cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS id SERIAL;")
+            cur.execute("ALTER TABLE users ALTER COLUMN phone SET NOT NULL;")
+            cur.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_phone_unique ON users(phone);")
+            cur.execute(
+                """
+                DO $$
+                BEGIN
+                    IF NOT EXISTS (
+                        SELECT 1
+                        FROM information_schema.table_constraints tc
+                        JOIN information_schema.key_column_usage kcu
+                            ON tc.constraint_name = kcu.constraint_name
+                        WHERE tc.table_name = 'users'
+                          AND tc.constraint_type = 'PRIMARY KEY'
+                          AND kcu.column_name = 'id'
+                    ) THEN
+                        ALTER TABLE users DROP CONSTRAINT IF EXISTS users_pkey;
+                        ALTER TABLE users ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+                    END IF;
+                END $$;
+                """
+            )
+
+            # SEED ADMIN (sin nombre, forzando onboarding limpio)
             admin_phone = os.getenv("ADMIN_PHONE")  # Definir en .env
             if admin_phone:
                 cur.execute("""
-                    INSERT INTO users (phone, name, role, profile_status)
-                    VALUES (%s, 'Diego', 'admin', 'incomplete')
-                    ON CONFLICT (phone) DO NOTHING;
+                    INSERT INTO users (phone, role, profile_status)
+                    VALUES (%s, 'admin', 'incomplete')
+                    ON CONFLICT (phone) DO UPDATE
+                        SET profile_status = 'incomplete', name = NULL;
                 """, (admin_phone,))
 
             # Campo de datos pendientes para ingestas (limbo)
@@ -88,6 +122,27 @@ def init_db():
                 ALTER TABLE user_state
                 ADD COLUMN IF NOT EXISTS pending_file_data JSONB;
             """)
+
+            # Sesiones y OTPs para autenticación persistente
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS sessions (
+                    token TEXT PRIMARY KEY,
+                    phone TEXT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    expires_at TIMESTAMP NOT NULL
+                );
+                """
+            )
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS otps (
+                    phone TEXT PRIMARY KEY,
+                    code TEXT NOT NULL,
+                    expires_at TIMESTAMP NOT NULL
+                );
+                """
+            )
 
             print("✅ Esquema de Usuarios sincronizado.")
 

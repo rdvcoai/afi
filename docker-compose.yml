@@ -1,26 +1,27 @@
 services:
-  # 1. LA BÓVEDA FINANCIERA
-  actual-server:
-    image: actualbudget/actual-server:latest
-    container_name: afi_actual
-    ports:
-      - "5006:5006"
+  # 1. VISUALIZACIÓN (Streamlit)
+  afi-dashboard:
+    build: ./afi-dashboard
+    container_name: afi_dashboard
+    restart: always
     volumes:
-      - ./data/actual_data:/data
-    restart: unless-stopped
+      - ./afi-dashboard:/app
+    environment:
+      - CORE_URL=http://afi-core:8080
+      - DB_HOST=afi_db
+      - DB_USER=afi_user
+      - DB_PASS=${DB_PASSWORD}
+      - DB_NAME=afi_brain
     networks:
       - afi_network
 
-  # 2. LA MEMORIA VECTORIAL
-  chroma-db:
-    image: chromadb/chroma:latest
-    container_name: afi_chroma
-    volumes:
-      - ./data/chroma_data:/chroma/chroma
+  # 2. ADMINISTRACIÓN (NocoDB)
+  afi-nocodb:
+    image: nocodb/nocodb:latest
+    container_name: afi_nocodb
+    restart: always
     environment:
-      - IS_PERSISTENT=TRUE
-    ports:
-      - "8000:8000"
+      - NC_DB=pg://afi_db:5432?u=afi_user&p=${DB_PASSWORD}&d=afi_brain
     networks:
       - afi_network
 
@@ -29,16 +30,17 @@ services:
     build: ./afi-core
     container_name: afi_core
     depends_on:
-      - actual-server
-      - chroma-db
       - afi_db
     volumes:
       - ./afi-core:/app
+      - ./afi-dashboard:/app/dashboard_code
       - ./data/books:/app/data/books
       - ./data/csv:/app/data/csv
+      - ./data/onedrive_import:/app/data/onedrive_import
       - ./backups:/app/backups
       - ./data/media:/app/data/media
       - ./data/media:/app/media
+      - ${HOME}/.config/rclone/rclone.conf:/root/.config/rclone/rclone.conf:rw
     env_file: .env
     environment:
       - DB_HOST=afi_db
@@ -47,6 +49,8 @@ services:
       - DB_NAME=afi_brain
       - BRIDGE_URL=http://afi-whatsapp:3000
       - WHATSAPP_PUSH_URL=http://afi-whatsapp:3000/send
+      - DASHBOARD_URL=https://afi.rdv.net.co
+      - PYTHONDONTWRITEBYTECODE=1
     ports:
       - "8080:8080"
     networks:
@@ -82,26 +86,8 @@ services:
       POSTGRES_USER: afi_user
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: afi_brain
-    ports:
-      - "5432:5432"
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
-    networks:
-      - afi_network
-
-  # 5. EL GUARDIÁN (Backup - Opcional en dev, critico en prod)
-  # Requiere configuración previa de Rclone en el host o montaje de config
-  # backup-service:
-  #   image: rclone/rclone:latest
-  #   ... (configuraremos esto en Sprint 2)
-
-  # 8. IA LOCAL (Ollama)
-  ollama-local:
-    image: ollama/ollama:latest
-    container_name: afi_ollama
-    volumes:
-      - ./data/ollama:/root/.ollama
-    restart: unless-stopped
     networks:
       - afi_network
 
@@ -118,8 +104,9 @@ services:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
     depends_on:
-      - actual-server
       - afi-core
+      - afi-dashboard
+      - afi-nocodb
     networks:
       - afi_network
 
@@ -130,7 +117,6 @@ services:
     volumes:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
-    # No necesitamos network aquí, comparte volumen con Nginx
 
 networks:
   afi_network:

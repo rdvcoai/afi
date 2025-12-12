@@ -1,39 +1,28 @@
-# Environment variables
+.aider*
 .env
 
-# Data volumes (NO SUBIR)
+# Python / virtualenv
+.venv/
+venv/
+**/__pycache__/
+*.pyc
+
+# Node/WhatsApp session & local state
+afi-whatsapp/session/
+afi-whatsapp/account*.sqlite
+*.sqlite*
+afi-whatsapp/node_modules/
+
+# Data volumes / backups / certs
 data/
 backups/
 certbot/
 
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-env/
-venv/
-ENV/
-.venv
+# Local dashboards/build artifacts
+afi-dashboard/.streamlit/
+afi-dashboard/__pycache__/
 
-# Node
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-session/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Docker
-.dockerignore
-.aider*
+# CSV/exports
+*.csv
+*.db
+afi-core/data/

@@ -21,3 +21,4 @@ xlsxwriter
 httpx
 psycopg2-binary
 pytest
+tabulate

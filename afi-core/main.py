@@ -2,9 +2,12 @@ import os
 import json
 import datetime
 import time
+import re
 import asyncio
 import threading
-from fastapi import FastAPI, Request
+import secrets
+from uuid import uuid4
+from fastapi import FastAPI, Request, HTTPException
 from pydantic import BaseModel
 import google.generativeai as genai
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -12,6 +15,12 @@ from apscheduler.triggers.cron import CronTrigger
 import httpx
 import email_ingest
 import identity_manager
+from briefing_agent import send_morning_briefing
+from db_ops import ensure_account, insert_transactions, execute_query
+from text_to_ui_agent import process_query
+from onboarding_agent import process_onboarding
+from message_queue import enqueue_message, worker as mq_worker
+from backup_manager import run_backup
 from tools import (
     TOOLS_SCHEMA,
     get_financial_audit,
@@ -19,12 +28,12 @@ from tools import (
     categorize_payees_tool,
     create_account_tool,
     find_and_import_history_tool,
-    import_history_from_file_tool,
     complete_onboarding_tool,
     confirm_import_tool,
+    generate_spending_chart_tool,
 )
 from database import init_db, get_user_context, save_user_context, get_conn, save_pending_data, get_pending_data
-from data_engine import process_file_stream
+from data_engine import process_file_universal
 from profile_manager import get_user_profile, update_financial_goals
 
 # Inicialización
@@ -53,6 +62,10 @@ chat_history = []
 upload_buffers: dict[str, list] = {}
 # Generaciones de debounce para reiniciar la espera por usuario
 debounce_generation: dict[str, int] = {}
+
+# Config sesión/OTP persistente
+OTP_TTL_SECONDS = 300
+SESSION_TTL_SECONDS = 3600
 # Desactivar WatchFiles: no usar reload en producción; este flag evita ruido si se activa en uvicorn.
 # Inicializar DB
 init_db()
@@ -67,6 +80,22 @@ class WhatsAppMessage(BaseModel):
     media_mime: str | None = None
 
 
+class OTPRequest(BaseModel):
+    phone: str
+
+
+class OTPVerify(BaseModel):
+    phone: str
+    code: str
+
+
+class ChatQuery(BaseModel):
+    question: str
+    token: str | None = None
+    phone: str | None = None
+    history: list[dict] | None = None
+
+
 def _debounce_worker(phone: str, gen: int):
     """Worker en hilo: espera ventana y procesa si la generación sigue vigente."""
     # Procesar casi inmediato
@@ -79,40 +108,27 @@ def _debounce_worker(phone: str, gen: int):
         print(f"🔥 Error en timer de buffer para {phone}: {e}")
 
 
-async def morning_briefing():
-    """Briefing diario 7:00 AM."""
-    print("⏰ Generando Morning Briefing con IA...")
-    try:
-        today = datetime.date.today()
-        model = genai.GenerativeModel("gemini-2.5-flash")
-        prompt = f"""
-Eres AFI, mi gestor de patrimonio. Hoy es {today.strftime('%A %d de %B')}.
-Genera un 'Morning Briefing' corto (máx 3 párrafos) estilo Mr. Money Mustache / Ramit Sethi.
-"""
-        response = model.generate_content(prompt)
-        briefing_text = response.text
-        phone = ADMIN_PHONE
-        if not phone:
-            print("⚠️ No ADMIN_PHONE configurado.")
-            return
-        async with httpx.AsyncClient() as client:
-            await client.post(WHATSAPP_PUSH_URL, json={"phone": phone, "message": briefing_text}, timeout=20.0)
-            print("✅ Morning Briefing enviado.")
-    except Exception as e:
-        print(f"🔥 Error en Morning Briefing: {e}")
-
-
 async def check_emails():
-    """Escaneo periódico de correos bancarios."""
-    print("📧 Scaneando correos bancarios...")
+    """Escaneo periódico de correos bancarios (Omnicanalidad)."""
+    from email_agent import check_emails as run_email_check
+    print("📧 Scheduler: Iniciando escaneo de correos...")
     try:
         # Ejecutar en un hilo para no bloquear el loop principal ni las peticiones HTTP.
-        await asyncio.to_thread(email_ingest.process_emails)
+        await asyncio.to_thread(run_email_check)
     except Exception as e:
         print(f"❌ Error crítico en check_emails: {e}")
 
 
-def execute_function(name, args):
+def _resolve_user_id(phone: str) -> int | None:
+    try:
+        row = execute_query("SELECT id FROM users WHERE phone = %s", (phone,), fetch_one=True)
+        return row[0] if row else None
+    except Exception as e:
+        print(f"⚠️ Error resolving user_id for {phone}: {e}")
+        return None
+
+
+def execute_function(name, args, user_id=None):
     """Normaliza argumentos de llamada de herramienta y despacha a la implementación."""
     def _to_python(val):
         # Convierte objetos protobuf (MapComposite/RepeatedComposite) a tipos nativos.
@@ -147,25 +163,38 @@ def execute_function(name, args):
                 keywords = [str(keywords)]
         return categorize_payees_tool(py_args.get("category_name"), keywords)
     if name == "create_account_tool":
-        return create_account_tool(py_args.get("account_name"), py_args.get("account_type", "checking"))
+        return create_account_tool(py_args.get("account_name"), py_args.get("account_type", "checking"), user_id=user_id)
     if name == "find_and_import_history_tool":
         return find_and_import_history_tool(py_args.get("account_name"))
-    if name == "import_history_from_file_tool":
-        # aceptar account_name o account_id como alias
-        return import_history_from_file_tool(
-            account=py_args.get("account_name") or py_args.get("account_id"),
-            file_name_in_server=py_args.get("file_name_in_server") or py_args.get("file_name") or py_args.get("file"),
-        )
     if name == "complete_onboarding_tool":
         return complete_onboarding_tool(py_args.get("summary"))
     if name == "confirm_import_tool":
-        return confirm_import_tool(py_args.get("target_account_name"))
+        return confirm_import_tool(py_args.get("target_account_name"), user_id=user_id)
+    if name == "generate_spending_chart_tool":
+        return generate_spending_chart_tool(py_args.get("period", "current_month"), user_id=user_id)
     return "Error: Tool not found"
 
 
-def get_system_instruction(file_summary: str, current_mode: str, wisdom_context: str) -> str:
+def get_system_instruction(file_summary: str, current_mode: str, wisdom_context: str, is_admin_incomplete: bool) -> str:
     """Construye el prompt del sistema con idioma forzado y capacidades multimodales."""
-    return f"""
+    if is_admin_incomplete:
+        system_instruction = """
+        Eres AFI, el CFO Personal Inteligente.
+        Estás hablando con un usuario NUEVO (DB vacía).
+        
+        TU OBJETIVO ÚNICO: Llenar el sistema de datos REALES.
+        
+        PROTOCOLO:
+        1. NO hagas preguntas aburridas ("¿En qué gastas?").
+        2. PIDE EVIDENCIA: "Hola. Para organizar tus finanzas, necesito datos. **Envíame ahora mismo tus extractos bancarios (PDF/Excel) o fotos de facturas**."
+        3. Si el usuario envía archivos, el sistema los procesará. Tú solo guía.
+        4. Si el sistema dice "Cargué X movimientos", confirma que las cuentas se hayan creado.
+        
+        TONO: Ejecutivo, Directo, "Cero Fricción".
+        """
+    elif current_mode == "SHERLOCK":
+        # This block is now effectively dead code, but keeping it for clarity that SHERLOCK logic is handled by is_admin_incomplete
+        system_instruction = f"""
 Eres AFI, el CFO Personal y Asesor Patrimonial.
 
 IDIOMA OBLIGATORIO:
@@ -186,11 +215,35 @@ CAPACIDADES:
 - Puedes escuchar audios. Transcribe mentalmente y ejecuta la intención financiera.
 
 INSTRUCCIONES:
-1. Tu conocimiento sobre las finanzas de Diego viene EXCLUSIVAMENTE de la sección 'MEMORIA' de arriba. Úsala.
-2. Si el estado es ONBOARDING y Diego saluda, preséntale el hallazgo más grande de la memoria.
-3. Si hay texto en CONOCIMIENTO FINANCIERO, úsalo para responder y cita la fuente entre corchetes.
-4. Si la memoria está vacía, inicia una entrevista para recolectar datos.
+1. Usa únicamente la memoria que recibes arriba; si está vacía, entrevista para obtener datos.
+2. Si hay texto en CONOCIMIENTO FINANCIERO, úsalo para responder y cita la fuente entre corchetes.
 """
+    else:
+        system_instruction = f"""
+Eres AFI, el CFO Personal y Asesor Patrimonial.
+
+IDIOMA OBLIGATORIO:
+Habla EXCLUSIVAMENTE en Español Latinoamericano.
+Usa términos locales (pesos, 'tanquear', 'mercado') si aplica.
+Nunca respondas en inglés.
+
+MEMORIA DEL USUARIO:
+{file_summary[:6000]}
+
+ESTADO ACTUAL: {current_mode}
+
+CONOCIMIENTO FINANCIERO (LIBROS):
+{wisdom_context if wisdom_context else "Sin citas disponibles para esta consulta."}
+
+CAPACIDADES:
+- Puedes ver imágenes (recibos, facturas). Extrae: Fecha, Comercio, Total, Categoría.
+- Puedes escuchar audios. Transcribe mentalmente y ejecuta la intención financiera.
+
+INSTRUCCIONES:
+1. Usa únicamente la memoria que recibes arriba; si está vacía, entrevista para obtener datos.
+2. Si hay texto en CONOCIMIENTO FINANCIERO, úsalo para responder y cita la fuente entre corchetes.
+"""
+    return system_instruction
 
 
 def retrieve_wisdom(query: str, top_k: int = 3) -> str:
@@ -213,28 +266,263 @@ def retrieve_wisdom(query: str, top_k: int = 3) -> str:
         with get_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    "SELECT content, metadata FROM financial_wisdom ORDER BY embedding <-> %s::vector LIMIT %s",
+                    "SELECT content, source FROM financial_wisdom ORDER BY embedding <-> %s::vector LIMIT %s",
                     (vec_literal, top_k),
                 )
                 rows = cur.fetchall()
                 if not rows:
                     return ""
                 snippets = []
-                for content, metadata in rows:
-                    source = "desconocido"
-                    try:
-                        if isinstance(metadata, str):
-                            meta = json.loads(metadata)
-                        else:
-                            meta = metadata or {}
-                        source = meta.get("source", source)
-                    except Exception:
-                        pass
-                    snippets.append(f"[{source}] {content}")
+                for content, source in rows:
+                    source_name = source or "desconocido"
+                    snippets.append(f"[{source_name}] {content}")
                 return "\n\n".join(snippets)
     except Exception as e:
         print(f"⚠️ RAG search failed: {e}")
         return ""
+
+
+def _extract_json_dict(text: str):
+    if not text:
+        return None
+    try:
+        return json.loads(text)
+    except Exception:
+        pass
+    cleaned = text.strip()
+    if cleaned.startswith("```"):
+        try:
+            return json.loads(cleaned.strip("`").strip())
+        except Exception:
+            pass
+    match = re.search(r"\{.*\}", text, re.S)
+    if match:
+        candidate = match.group(0)
+        try:
+            return json.loads(candidate)
+        except Exception:
+            return None
+    return None
+
+
+def _normalize_amount_value(value, force_expense: bool = True):
+    try:
+        amount = float(value)
+    except Exception:
+        return None
+    if force_expense and amount > 0:
+        amount = -amount
+    return amount
+
+
+def _ensure_account_sync(account_name: str) -> int | None:
+    name = (account_name or "").strip()
+    if not name:
+        return None
+    try:
+        return ensure_account(name)
+    except Exception as e:
+        print(f"⚠️ No se pudo asegurar cuenta {name}: {e}")
+        return None
+
+
+def _ingest_voice_transaction(structured: dict) -> str:
+    if not structured:
+        return "⚠️ No pude entender la nota de voz."
+
+    account_name = (
+        structured.get("account")
+        or structured.get("account_name")
+        or structured.get("wallet")
+        or "Cuenta Voz"
+    )
+    payee = structured.get("payee") or structured.get("merchant") or "Gasto de voz"
+    date_str = structured.get("date") or datetime.date.today().isoformat()
+    amount_value = _normalize_amount_value(structured.get("amount"), force_expense=True)
+    if amount_value is None or amount_value == 0:
+        return "⚠️ No pude extraer el monto del audio."
+    notes = structured.get("notes") or structured.get("transcription") or "Nota de voz registrada automáticamente."
+
+    account_id = _ensure_account_sync(account_name)
+    if not account_id:
+        return f"⚠️ No pude asegurar la cuenta '{account_name}' para registrar el gasto."
+
+    tx_payload = {
+        "date": date_str,
+        "amount": amount_value,
+        "description": str(payee)[:200],
+        "import_source": "voice_flash",
+        "category": structured.get("category"),
+    }
+
+    try:
+        inserted = insert_transactions(account_id, [tx_payload], import_source="voice_flash")
+        if inserted == 0:
+            return "⚠️ No pude registrar el gasto en la bóveda."
+        amount_display = abs(amount_value)
+        return f"✅ Registré ${amount_display:,.0f} en {payee} ({account_name})."
+    except Exception as e:
+        print(f"❌ Error importando gasto de voz: {e}")
+        return f"⚠️ No pude registrar el gasto en {account_name}. Intenta de nuevo por texto."
+
+
+def _normalize_phone(raw: str) -> str:
+    return "".join(ch for ch in (raw or "") if ch.isdigit())
+
+
+def _store_otp(phone: str, code: str, expires_at: float) -> None:
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO otps (phone, code, expires_at)
+                VALUES (%s, %s, to_timestamp(%s))
+                ON CONFLICT (phone) DO UPDATE SET code = EXCLUDED.code, expires_at = EXCLUDED.expires_at;
+                """,
+                (phone, code, expires_at),
+            )
+
+
+def _validate_otp(phone: str, code: str) -> bool:
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT code, EXTRACT(EPOCH FROM expires_at) FROM otps WHERE phone = %s;",
+                (phone,),
+            )
+            row = cur.fetchone()
+            if not row:
+                return False
+            stored_code, exp_ts = row
+            if time.time() > float(exp_ts):
+                cur.execute("DELETE FROM otps WHERE phone = %s;", (phone,))
+                return False
+            if stored_code != code:
+                return False
+            cur.execute("DELETE FROM otps WHERE phone = %s;", (phone,))
+            return True
+
+
+def _create_session(phone: str) -> tuple[str, int]:
+    token = uuid4().hex
+    expires_at = time.time() + SESSION_TTL_SECONDS
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO sessions (token, phone, expires_at)
+                VALUES (%s, %s, to_timestamp(%s))
+                ON CONFLICT (token) DO UPDATE SET phone = EXCLUDED.phone, expires_at = EXCLUDED.expires_at;
+                """,
+                (token, phone, expires_at),
+            )
+            # Limpieza básica
+            cur.execute("DELETE FROM sessions WHERE expires_at < NOW();")
+    return token, SESSION_TTL_SECONDS
+
+
+def _validate_session_token(token: str | None) -> str | None:
+    if not token:
+        return None
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT phone FROM sessions WHERE token = %s AND expires_at > NOW();",
+                (token,),
+            )
+            row = cur.fetchone()
+            if row:
+                return row[0]
+            return None
+
+
+@app.post("/auth/request-otp")
+async def request_otp(payload: OTPRequest):
+    phone = _normalize_phone(payload.phone)
+    if not phone:
+        raise HTTPException(status_code=400, detail="Número de teléfono requerido.")
+    code = f"{secrets.randbelow(1_000_000):06d}"
+    expires_at = time.time() + OTP_TTL_SECONDS
+    _store_otp(phone, code, expires_at)
+    try:
+        await send_push_message(phone, f"Tu código de acceso AFI es: {code}")
+    except Exception as e:
+        print(f"⚠️ No se pudo enviar OTP a {phone}: {e}")
+        raise HTTPException(status_code=500, detail="No se pudo enviar el código.")
+    return {"status": "ok", "expires_in": OTP_TTL_SECONDS}
+
+
+@app.post("/auth/verify-otp")
+async def verify_otp(payload: OTPVerify):
+    phone = _normalize_phone(payload.phone)
+    code = (payload.code or "").strip()
+    if not phone or not code:
+        raise HTTPException(status_code=400, detail="Teléfono y código son obligatorios.")
+    valid = _validate_otp(phone, code)
+    if not valid:
+        raise HTTPException(status_code=401, detail="Código incorrecto o expirado.")
+    token, ttl = _create_session(phone)
+    try:
+        await send_push_message(phone, "✅ Acceso autorizado. Bienvenido a AFI.")
+    except Exception as e:
+        print(f"⚠️ No se pudo confirmar OTP por WhatsApp: {e}")
+    return {"status": "authenticated", "token": token, "expires_in": ttl}
+
+
+@app.post("/chat/query")
+async def chat_query(payload: ChatQuery):
+    if not payload.question:
+        raise HTTPException(status_code=400, detail="Pregunta requerida.")
+    phone = None
+    # Validar sesión si se envía token
+    if payload.token:
+        phone_validated = _validate_session_token(payload.token)
+        if not phone_validated:
+            raise HTTPException(status_code=401, detail="Sesión expirada o inválida.")
+        phone = phone_validated
+    
+    # --- INTERCEPCIÓN ONBOARDING ---
+    if phone:
+        # Ejecutar en hilo aparte para no bloquear
+        onboarding_reply = await asyncio.to_thread(process_onboarding, payload.question, phone)
+        if onboarding_reply:
+            return {
+                "answer": onboarding_reply,
+                "viz_type": "text", # El onboarding es puramente conversacional
+                "timestamp": datetime.datetime.utcnow().isoformat(),
+                "data": [],
+                "columns": []
+            }
+    # -------------------------------
+
+    result = await asyncio.to_thread(process_query, payload.question, phone or payload.phone, payload.history or [])
+    result["timestamp"] = datetime.datetime.utcnow().isoformat()
+    return result
+
+
+def _extract_voice_transaction(uploaded_file, context: str):
+    prompt = f"""
+Eres AFI, CFO personal.
+Contexto del usuario: "{context}"
+Transcribe la nota de voz y extrae el gasto.
+Devuelve SOLO JSON con:
+- amount: número (gasto en negativo si no se indica signo)
+- payee: comercio o concepto
+- account: cuenta o billetera mencionada
+- date: YYYY-MM-DD (usa la fecha de hoy por defecto)
+- notes: detalle breve
+- transcription: transcripción corta
+
+Ejemplo de salida:
+{{"amount": -20000, "payee": "Taxi", "account": "Nequi", "date": "2024-11-19", "notes": "viaje aeropuerto", "transcription": "me gasté 20 mil en taxi"}}
+"""
+    model = genai.GenerativeModel("gemini-2.5-flash")
+    response = model.generate_content([prompt, uploaded_file])
+    raw_text = response.text or ""
+    parsed = _extract_json_dict(raw_text)
+    if parsed and isinstance(parsed, dict) and not parsed.get("date"):
+        parsed["date"] = datetime.date.today().isoformat()
+    return parsed, raw_text.strip()
 
 
 def process_multimodal_request(user_text: str, media_path: str, media_mime: str, system_instruction: str, phone: str) -> str:
@@ -279,11 +567,20 @@ Cuando quieras cargar, dime: "Cargar a la cuenta X". """
     try:
         uploaded_file = genai.upload_file(media_path, mime_type=mime_to_use)
         while uploaded_file.state.name == "PROCESSING":
-            time.sleep(1)
+            time.sleep(0.25)
             uploaded_file = genai.get_file(uploaded_file.name)
 
         if uploaded_file.state.name == "FAILED":
             return "⚠️ Google no pudo procesar el formato del archivo."
+
+        # OPTIMIZACIÓN FLASH (Solo Audio)
+        is_audio = "audio" in mime_to_use or "ogg" in mime_to_use
+        
+        if is_audio:
+            structured, raw_voice = _extract_voice_transaction(uploaded_file, user_text)
+            if structured:
+                return _ingest_voice_transaction(structured)
+            return raw_voice or "⚠️ Audio mudo."
 
         multimodal_prompt = f"""
 CONTEXTO USUARIO: "{user_text}"
@@ -303,12 +600,31 @@ ACCIÓN: Ejecuta la herramienta necesaria o responde.
         return "⚠️ Error procesando el archivo multimedia. Por favor intenta con texto por ahora."
 
 
+async def send_media_message(phone: str, file_path: str, caption: str = ""):
+    """Envía multimedia vía endpoint /send-media."""
+    try:
+        async with httpx.AsyncClient() as client:
+             # Nota: path debe ser accesible por el contenedor afi-whatsapp (volumen compartido /app/data/media)
+             # file_path interno en afi-core: /app/data/media/xyz.png
+             # file_path en afi-whatsapp: /app/data/media/xyz.png (si volúmenes coinciden)
+             await client.post(f"{BRIDGE_URL}/send-media", json={
+                 "phone": phone,
+                 "filePath": file_path,
+                 "caption": caption
+             })
+    except Exception as e:
+        print(f"❌ Error enviando media a {phone}: {e}")
+
+
 def ai_router(text: str, user_context: dict) -> str:
     """Bucle agéntico con Gemini y function-calling."""
     global chat_history
     print(f"🧠 [DEBUG] Enviando a Gemini: {text}")
     try:
         phone = user_context.get("phone") or user_context.get("from_user")
+        
+        # Resolver User ID para RLS
+        user_id = _resolve_user_id(phone) if phone else None
 
         # 1. RECUPERAR IDENTIDAD Y MEMORIA
         user_profile = get_user_profile(phone)
@@ -328,31 +644,6 @@ def ai_router(text: str, user_context: dict) -> str:
         if admin_incomplete:
             file_summary = ""
             current_mode = "SHERLOCK"
-            system_instruction = """
-Eres AFI, un Arquitecto Financiero Privado de alto nivel.
-Estás iniciando la relación con tu cliente. NO ASUMAS NADA. Tu trabajo es descubrir su realidad financiera.
-
-OBJETIVO: Construir el "Mapa de Flujo de Dinero" del usuario.
-
-PROTOCOLO DE ENTREVISTA (Conversacional, no interrogatorio):
-
-1. MODELO MENTAL (La Estrategia):
-   - Pregunta clave: "¿Cómo te gusta operar tu dinero? ¿Eres 'Totalero' (todo a Tarjeta de Crédito para ganar puntos y pagar a fin de mes) o prefieres usar Débito/Efectivo?"
-   - Por qué importa: Si usa TC, las transferencias a la tarjeta NO son gastos, son pagos.
-
-2. EL MAPA DE CUENTAS (La Infraestructura):
-   - Identifica la cuenta "Hub" (ingresos) y las cuentas "Spoke" (gastos).
-   - Pregunta: "¿En qué banco recibes tus ingresos principales y qué otras cuentas o billeteras usas?"
-
-3. EL DOLOR (Prioridades):
-   - Pregunta: "¿Tienes alguna meta urgente (viaje, compra) o alguna deuda que te quite el sueño?"
-
-REGLA DE ORO:
-- Si el usuario subió un CSV, analízalo PERO confirma tus sospechas con él. "Veo muchos movimientos en Nubank, ¿esa es tu tarjeta principal?"
-- Habla siempre en Español Latinoamericano.
-- HERRAMIENTA ESPECIAL ADMIN: Puedes leer archivos en /app/data/csv. Si el usuario te pide cargar historia (ej: Nubank), pregunta el nombre del archivo o sugiérelo y usa import_history_from_file_tool con el ID de la cuenta.
-- SI ENVÍA VARIOS ARCHIVOS: Procesa cada uno, acumula cuántos movimientos llevas y pregunta a qué cuenta cargarlos cuando termine.
-"""
         else:
             # MODO NORMAL (CFO) - Usa la memoria y herramientas existentes
             current_mode = current_mode or "NORMAL"
@@ -369,8 +660,8 @@ REGLA DE ORO:
                 except Exception as e:
                     print(f"⚠️ No hay CSV o error lectura: {e}")
 
-            wisdom_context = retrieve_wisdom(text)
-            system_instruction = get_system_instruction(file_summary, current_mode, wisdom_context)
+        wisdom_context = retrieve_wisdom(text)
+        system_instruction = get_system_instruction(file_summary, current_mode, wisdom_context, admin_incomplete)
 
         # 2b. Selección dinámica de modelo
         if current_mode in ("SHERLOCK", "ONBOARDING"):
@@ -402,22 +693,14 @@ REGLA DE ORO:
             print(f"🔧 [DEBUG] Gemini quiere usar herramienta: {tool_call.name} args: {tool_call.args}")
             # Feedback inmediato al usuario sobre trabajo en curso
             try:
-                phone = user_context.get("phone") or user_context.get("from_user")
                 if phone:
-                    async def send_feedback():
-                        async with httpx.AsyncClient() as client:
-                            await client.post(
-                                f"{BRIDGE_URL}/send-message",
-                                json={"phone": phone, "message": "⏳ Procesando cambios en la Bóveda..."},
-                                timeout=5,
-                            )
-                    import asyncio as _asyncio
-                    _asyncio.create_task(send_feedback())
+                    asyncio.create_task(enqueue_message(phone, "⏳ Procesando cambios en la Bóveda..."))
             except Exception as e:
                 print(f"⚠️ No se pudo enviar feedback inmediato: {e}")
 
             try:
-                tool_result = execute_function(tool_call.name, tool_call.args)
+                # PASS USER_ID TO TOOLS
+                tool_result = execute_function(tool_call.name, tool_call.args, user_id=user_id)
             except Exception as e:
                 tool_result = f"Error ejecutando herramienta {tool_call.name}: {e}"
 
@@ -446,81 +729,56 @@ REGLA DE ORO:
 
 # --- Buffer asíncrono de archivos (debounce 4s) ---
 async def process_buffered_files(phone: str):
-    """Se ejecuta cuando el usuario deja de enviar archivos por 4 segundos."""
     files = upload_buffers.pop(phone, [])
-    if not files:
-        print(f"ℹ️ Buffer vacío para {phone}, nada que procesar.")
-        return
+    if not files: return
 
+    # Feedback Inmediato (UX)
+    await send_push_message(phone, "🧐 Recibido. Estoy leyendo tus documentos con Gemini Pro... Dame unos segundos.")
+
+    all_txs = []
+    accounts_detected = set()
+
+    # Procesar en paralelo o serie (Serie es más seguro para no saturar API)
+    for f in files:
+        txs = await asyncio.to_thread(process_file_universal, f['path'], f['mime'])
+        if txs:
+            all_txs.extend(txs)
+            # Recolectar pistas de qué bancos encontró
+            for t in txs:
+                if t.get('account_hint'):
+                    accounts_detected.add(t['account_hint'])
+
+    # Guardar en Limbo (DB)
+    save_pending_data(phone, all_txs)
+    
+    # Reporte Inteligente
+    total = sum(t['amount'] for t in all_txs)
+    bancos_str = ", ".join(accounts_detected) if accounts_detected else "tus cuentas"
+    
+    msg = f"""
+    ✅ **Análisis Completado**
+    Procesé {len(files)} documentos.
+    
+    📄 **Movimientos:** {len(all_txs)}
+    🏦 **Bancos Detectados:** {bancos_str}
+    💰 **Neto:** ${total:,.0f}
+    
+    Para terminar, confirma:
+    * **"Cargar a Nubank"**
+    * **"Cargar a Bancolombia"**
+    * O dime: **"Crear cuentas y cargar"** (Si es la primera vez).
+    """
+    
     target_phone = os.getenv("ADMIN_PHONE", phone)
-
-    print(f"🚀 Procesando lote consolidado de {len(files)} archivos para {phone}...")
-    await send_push_message(
-        target_phone,
-        f"⏳ Recibí {len(files)} archivos. Arranco el procesamiento; si ves este mensaje, sigo vivo.",
-    )
-
-    all_transactions = []
-    processed_rows = 0
-    for file in files:
-        try:
-            txs = await asyncio.to_thread(process_file_stream, file["path"], file["mime"])
-            processed_rows += len(txs) if txs else 0
-            # Heartbeat por lote: cada vez que procesamos un archivo grande, avisamos progreso
-            await send_push_message(
-                target_phone,
-                f"⏳ Sigo analizando... llevo {processed_rows} movimientos extraídos (archivo: {file.get('filename','')}).",
-            )
-            if txs:
-                all_transactions.extend(txs)
-        except Exception as e:
-            print(f"⚠️ Error procesando {file.get('path')}: {e}")
-
-    if not all_transactions:
-        print("⚠️ No se extrajeron transacciones de los archivos.")
-        await send_push_message(
-            target_phone,
-            "Recibí tus archivos pero no pude extraer movimientos. ¿Puedes reenviarlos en CSV/Excel estándar?",
-        )
-        debounce_generation.pop(phone, None)
-        return
-
-    previous_data = get_pending_data(phone) or []
-    if not isinstance(previous_data, list):
-        try:
-            previous_data = list(previous_data)
-        except Exception:
-            previous_data = []
-
-    final_data = previous_data + all_transactions
-    save_pending_data(phone, final_data)
-
-    total_monto = sum(t.get("amount", 0) for t in final_data)
-    count = len(final_data)
-
-    response_text = (
-        f"📚 **Lote Procesado**\n"
-        f"Recibí **{len(files)} archivos** y extraje **{count} movimientos** nuevos.\n\n"
-        f"💰 **Total en Cola:** ${total_monto:,.0f}\n\n"
-        f"**¿Qué hacemos con esto?**\n"
-        f"1️⃣ Cargar a **Nubank**\n"
-        f"2️⃣ Cargar a **Bancolombia**\n"
-        f"3️⃣ Crear nueva cuenta\n\n"
-        f"*Dime el nombre de la cuenta o envía más archivos.*"
-    )
-
-    print(f"📤 Enviando respuesta a ADMIN: {target_phone} (Ignorando {phone})")
-    await send_push_message(target_phone, response_text)
-    debounce_generation.pop(phone, None)
+    await send_push_message(target_phone, msg)
 
 
 async def send_push_message(phone: str, text: str):
-    """Cliente HTTP para hablar con el endpoint /send de Node."""
+    """Encola mensaje para envío anti-ban."""
     try:
-        async with httpx.AsyncClient() as client:
-            await client.post(f"{BRIDGE_URL}/send", json={"to": phone, "message": text})
+        await enqueue_message(phone, text)
     except Exception as e:
-        print(f"❌ Error enviando Push a {phone}: {e!r}")
+        print(f"❌ Error encolando mensaje a {phone}: {e!r}")
 
 
 @app.get("/")
@@ -574,17 +832,27 @@ async def receive_message(request: Request):
         path_lower = media_payload.get("path", "").lower()
         is_doc = any(x in mime for x in ["csv", "comma-separated", "sheet", "excel", "ms-excel", "pdf"]) or filename_lower.endswith((".csv", ".xlsx", ".xls", ".pdf")) or path_lower.endswith((".csv", ".xlsx", ".xls", ".pdf"))
         if is_doc:
+            # Override mime_raw for CSV files to ensure compatibility with Gemini's File API
+            if any(x in mime for x in ["csv", "comma-separated"]) or filename_lower.endswith(".csv") or path_lower.endswith(".csv"):
+                mime_raw = "text/csv"
             filename = media_payload.get("filename") or media_payload.get("path")
             print(f"⏳ Buffering archivo: {filename}")
 
-            upload_buffers.setdefault(user_phone, []).append({"path": media_payload.get("path"), "mime": mime_raw})
+            upload_buffers.setdefault(user_phone, []).append({"path": media_payload.get("path"), "mime": mime_raw, "filename": media_payload.get("filename")})
             # Procesar de inmediato (sin esperar debounce)
             await process_buffered_files(user_phone)
             return {"status": "processed", "message": None}
 
         # Otros media (audio/imagen) -> procesar normal
         wisdom_context = retrieve_wisdom(body, top_k=3)
-        system_instruction = get_system_instruction(file_summary or "", current_mode or "NORMAL", wisdom_context)
+        user_profile = get_user_profile(user_phone)
+        admin_incomplete = (
+            user_profile
+            and user_profile.get("role") == "admin"
+            and user_profile.get("status") == "incomplete"
+        )
+
+        system_instruction = get_system_instruction(file_summary or "", current_mode or "NORMAL", wisdom_context, admin_incomplete)
         reply_text = await asyncio.to_thread(
             process_multimodal_request,
             body,
@@ -601,17 +869,18 @@ async def receive_message(request: Request):
 
     if reply_text:
         try:
-            target_phone = os.getenv("ADMIN_PHONE", user_phone)
-            print(f"📤 Enviando mensaje a {target_phone} (Ignorando {user_phone} si es LID)...")
-            async with httpx.AsyncClient() as client:
-                await client.post(
-                    f"{BRIDGE_URL}/send-message",
-                    json={"phone": target_phone, "message": reply_text},
-                    timeout=10,
-                )
-            print("✅ Mensaje entregado al puente.")
+            target_phone = user_phone or os.getenv("ADMIN_PHONE")
+            print(f"📤 Enviando mensaje a {target_phone} (origen: {user_phone})...")
+            
+            if reply_text.startswith("[MEDIA]"):
+                media_path = reply_text.replace("[MEDIA]", "").strip()
+                await send_media_message(target_phone, media_path, caption="📊 Aquí tienes tu gráfico.")
+            else:
+                await enqueue_message(target_phone, reply_text)
+                
+            print("✅ Mensaje en cola para entrega.")
         except Exception as e:
-            print(f"❌ Error enviando a WhatsApp: {e}")
+            print(f"❌ Error encolando envío a WhatsApp: {e}")
 
     return {"status": "processed"}
 
@@ -619,9 +888,21 @@ async def receive_message(request: Request):
 @app.on_event("startup")
 async def start_scheduler():
     try:
-        scheduler.add_job(morning_briefing, CronTrigger(hour=7, minute=0))
-        # Deshabilitado temporalmente para no bloquear el loop HTTP durante el sprint de buffer.
-        # scheduler.add_job(check_emails, CronTrigger(minute="*/15"))
+        # Worker anti-ban
+        asyncio.create_task(mq_worker())
+
+        scheduler.add_job(send_morning_briefing, CronTrigger(hour=7, minute=0))
+        
+        # PRUEBA INMEDIATA (En 2 minutos para validación de sprint)
+        run_date = datetime.datetime.now() + datetime.timedelta(minutes=2)
+        scheduler.add_job(send_morning_briefing, 'date', run_date=run_date)
+        print(f"🧪 Prueba de Briefing programada para: {run_date}")
+
+        # Backup diario 03:00 AM
+        scheduler.add_job(run_backup, CronTrigger(hour=3, minute=0))
+
+        # Omnicanalidad activada
+        scheduler.add_job(check_emails, CronTrigger(minute="*/15"))
         scheduler.start()
         print("⏳ Scheduler iniciado: AFI ahora tiene vida propia.")
     except Exception as e:

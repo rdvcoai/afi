@@ -5,6 +5,8 @@ RUN apt-get update && apt-get install -y \
     ffmpeg \
     libpq-dev \
     gcc \
+    postgresql-client \
+    rclone \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

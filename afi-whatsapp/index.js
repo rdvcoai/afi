@@ -1,9 +1,8 @@
-const { Client, LocalAuth } = require('whatsapp-web.js');
+const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 // const puppeteer = require('puppeteer-extra');
 // const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const qrcode = require('qrcode-terminal');
 const axios = require('axios');
-const bridge = require('./actual-bridge'); // Importar el puente
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
@@ -16,6 +15,46 @@ process.env.PUPPETEER_EXECUTABLE_PATH = process.env.PUPPETEER_EXECUTABLE_PATH ||
 const app = express();
 app.use(express.json());
 let isReady = false;
+// Mapea el número normalizado al último chatId (lid/c.us) para responder en el mismo hilo
+const chatMap = new Map();
+
+// Helper: enviar mensaje con fallback (API nativa y, si falla, inyección)
+async function sendToChat(chatId, body, media = null) {
+    try {
+        if (media) {
+            await client.sendMessage(chatId, media, { caption: body });
+        } else {
+            await client.sendMessage(chatId, body);
+        }
+        console.log(`📤 Respuesta enviada con sendMessage a ${chatId}`);
+        return;
+    } catch (e) {
+        console.log(`⚠️ sendMessage falló para ${chatId}, intento inyección directa...`, e.message);
+    }
+    // Fallback: Inyección directa (solo texto por ahora, media es complejo via inyección)
+    if (!media) {
+        try {
+            await client.pupPage.evaluate(async (to, text) => {
+                let chat = await window.Store.Chat.get(to);
+                if (!chat) {
+                    const contact = await window.Store.Contact.get(to);
+                    if (contact) {
+                        chat = await window.Store.Chat.find(contact);
+                    }
+                }
+                if (!chat || !chat.sendMessage) {
+                    throw new Error(`Chat ${to} no encontrado o sin sendMessage.`);
+                }
+                await chat.sendMessage(text);
+            }, chatId, body);
+            console.log(`📤 Respuesta inyectada correctamente a ${chatId}.`);
+        } catch (e) {
+            console.error("❌ Falló la inyección directa:", e.message);
+        }
+    } else {
+        console.error("❌ Falló envío de media y no hay fallback de inyección para archivos.");
+    }
+}
 
 const MEDIA_DIR = process.env.MEDIA_DIR || '/app/data/media';
 if (!fs.existsSync(MEDIA_DIR)) {
@@ -82,9 +121,12 @@ client.on('message', async msg => {
         }
 
         const normalizedFrom = msg.from ? msg.from.replace(/\D/g, '') : msg.from;
-        // Hard override: priorizar ADMIN_PHONE; si no existe, usar el número normalizado
+        if (normalizedFrom && msg.from) {
+            chatMap.set(normalizedFrom, msg.from);
+        }
+        // Usar siempre el número real del mensaje; ADMIN queda como respaldo
         const adminNumber = process.env.ADMIN_PHONE ? process.env.ADMIN_PHONE.replace(/\D/g, '') : null;
-        const resolvedNumber = adminNumber || normalizedFrom;
+        const resolvedNumber = normalizedFrom || adminNumber;
 
         const payload = {
             from_user: resolvedNumber,
@@ -102,25 +144,14 @@ client.on('message', async msg => {
         if (response.data && response.data.reply) {
             const reply = response.data.reply;
 
-            // Chat ID canónico: siempre ADMIN_PHONE (evita LID)
-            const targetPhone = adminNumber || resolvedNumber || normalizedFrom || '573002127123';
-            const chatId = `${targetPhone}@c.us`;
-            console.log(`💉 Inyectando respuesta directa a: ${chatId}`);
-
-            try {
-                // Inyección directa en la página para evitar validaciones LID de la librería
-                await client.pupPage.evaluate(async (to, body) => {
-                    const chat = await window.Store.Chat.get(to);
-                    if (!chat) {
-                        console.error("Chat no encontrado en Store:", to);
-                        return;
-                    }
-                    await chat.sendMessage(body);
-                }, chatId, reply);
-                console.log(`📤 Respuesta inyectada correctamente.`);
-            } catch (e) {
-                console.error("❌ Falló la inyección directa:", e.message);
-            }
+            // Chat ID: priorizar el hilo exacto (lid/c.us) si lo tenemos
+            const targetPhone = resolvedNumber || adminNumber || '573002127123';
+            const chatId =
+                chatMap.get(targetPhone) ||
+                chatMap.get(resolvedNumber) ||
+                (msg.from && msg.from.includes('@') ? msg.from : `${targetPhone}@c.us`);
+            console.log(`💬 Respondiendo a: ${chatId}`);
+            await sendToChat(chatId, reply);
         }
 
     } catch (error) {
@@ -135,33 +166,49 @@ app.post('/send-message', async (req, res) => {
     if (!isReady) return res.status(503).send('WhatsApp client not ready');
     try {
         const cleanTo = phone.replace('+', '').replace('@c.us', '');
-        const chatId = `${cleanTo}@c.us`;
+        const mappedChat = chatMap.get(cleanTo);
+        const chatId = mappedChat || `${cleanTo}@c.us`;
         // Intentar precargar chat
         try {
             const chat = await client.getChatById(chatId);
             await chat.sendStateTyping();
         } catch (e) {
-            console.log("⚠️ No pude prefetchear chat en /send-message, intento inyección directa...");
+            console.log("⚠️ No pude prefetchear chat en /send-message, sigo con envío...");
         }
-        // Inyección directa
-        await client.pupPage.evaluate(async (dest, text) => {
-            let chat = await window.Store.Chat.get(dest);
-            if (!chat) {
-                const contact = await window.Store.Contact.get(dest);
-                if (contact) {
-                    chat = await window.Store.Chat.find(contact);
-                }
-            }
-            if (!chat) {
-                throw new Error(`Chat ${dest} no encontrado en Store web.`);
-            }
-            await chat.sendMessage(text);
-        }, chatId, message);
+        await sendToChat(chatId, message);
         console.log(`📤 Push enviado a ${chatId}`);
         res.send({ status: 'sent' });
     } catch (e) {
         console.error("Error enviando push:", e);
         res.status(500).send(e.message);
+    }
+});
+
+app.post('/send-media', async (req, res) => {
+    const { phone, filePath, caption } = req.body || {};
+    if (!phone || !filePath) return res.status(400).send('Faltan datos (phone, filePath)');
+    if (!isReady) return res.status(503).send('WhatsApp client not ready');
+    
+    try {
+        if (!fs.existsSync(filePath)) {
+             return res.status(404).send('File not found at path');
+        }
+        
+        const media = MessageMedia.fromFilePath(filePath);
+        
+        const cleanTo = phone.replace('+', '').replace('@c.us', '');
+        const mappedChat = chatMap.get(cleanTo);
+        const chatId = mappedChat || `${cleanTo}@c.us`;
+
+        console.log(`🖼️ Intentando enviar MEDIA a: ${chatId}`);
+        
+        await sendToChat(chatId, caption || "", media);
+        
+        console.log(`✅ Media enviado a ${chatId}`);
+        res.json({ success: true });
+    } catch (e) {
+        console.error("❌ Error en /send-media:", e);
+        res.status(500).json({ error: e.message });
     }
 });
 
@@ -173,7 +220,8 @@ app.post('/send', async (req, res) => {
         if (!isReady) return res.status(503).send('WhatsApp client not ready');
 
         const cleanTo = to.replace('+', '').replace('@c.us', '');
-        const chatId = `${cleanTo}@c.us`;
+        const mappedChat = chatMap.get(cleanTo);
+        const chatId = mappedChat || `${cleanTo}@c.us`;
         console.log(`📨 Intentando Push a: ${chatId}`);
 
         // Paso 1: intentar precargar el chat (evita "Chat no encontrado")
@@ -184,133 +232,12 @@ app.post('/send', async (req, res) => {
             console.log("⚠️ No pude hacer pre-fetch del chat, intentaré inyección directa...");
         }
 
-        // Paso 2: Inyección directa con fallback de búsqueda en Store
-        await client.pupPage.evaluate(async (dest, text) => {
-            let chat = await window.Store.Chat.get(dest);
-            if (!chat) {
-                const contact = await window.Store.Contact.get(dest);
-                if (contact) {
-                    chat = await window.Store.Chat.find(contact);
-                }
-            }
-            if (!chat) {
-                throw new Error(`Chat ${dest} no encontrado en Store web.`);
-            }
-            await chat.sendMessage(text);
-        }, chatId, message);
-
+        // Paso 2: Envío con fallback
+        await sendToChat(chatId, message);
         console.log(`✅ Push exitoso a ${chatId}`);
         res.json({ success: true });
     } catch (e) {
         console.error("❌ Error en Push /send:", e);
-        res.status(500).json({ error: e.message });
-    }
-});
-
-// Endpoint: últimas transacciones
-app.get('/transactions', async (_req, res) => {
-    try {
-        const data = await bridge.getLastTransactions(5);
-        res.json(data);
-    } catch (e) {
-        res.status(500).send(e.message);
-    }
-});
-
-// Endpoint: búsqueda de transacciones (conciliación)
-app.post('/transactions/search', async (req, res) => {
-    try {
-        const data = await bridge.searchTransactions(req.body || {});
-        res.json(data);
-    } catch (e) {
-        res.status(500).send(e.message);
-    }
-});
-
-// Endpoint: crear transacción directa (para auditoría histórica)
-app.post('/transaction/add', async (req, res) => {
-    try {
-        const { budget_id, ...tx } = req.body || {};
-        const { date, amount, payee } = tx;
-        if (!date || typeof amount !== 'number' || !payee) return res.status(400).send('Faltan datos');
-        await bridge.addTransaction(tx, budget_id);
-        res.json({ status: 'ok' });
-    } catch (e) {
-        res.status(500).send(e.message);
-    }
-});
-
-// Endpoint: actualizar transacción
-app.post('/transaction/update', async (req, res) => {
-    try {
-        const { id, updates } = req.body || {};
-        if (!id || !updates) return res.status(400).send('Faltan datos');
-        await bridge.updateTransaction(id, updates);
-        res.json({ status: 'ok' });
-    } catch (e) {
-        res.status(500).send(e.message);
-    }
-});
-
-// Endpoint: crear cuenta directa
-app.post('/accounts', async (req, res) => {
-    try {
-        const { name, type, balance } = req.body || {};
-        if (!name) return res.status(400).send('Falta nombre');
-        const id = await bridge.createAccount(name, type || "checking", balance || 0);
-        res.json({ success: true, id });
-    } catch (e) {
-        console.error("❌ Error creando cuenta:", e);
-        res.status(500).json({ error: e.message });
-    }
-});
-
-// Endpoint: sincronizar cuentas detectadas
-app.post('/accounts/sync', async (req, res) => {
-    try {
-        const { accounts } = req.body || {};
-        const created = await bridge.syncAccounts(accounts || []);
-        res.json({ created });
-    } catch (e) {
-        res.status(500).send(e.message);
-    }
-});
-
-// Endpoint: importación masiva de transacciones
-app.post('/transactions/import', async (req, res) => {
-    try {
-        const { accountId, transactions } = req.body || {};
-        if (!accountId || !transactions) return res.status(400).send('Faltan datos (accountId, transactions)');
-        const result = await bridge.importTransactions(accountId, transactions);
-        res.json({ success: true, result });
-    } catch (e) {
-        console.error("❌ Error importando transacciones:", e);
-        res.status(500).json({ error: e.message });
-    }
-});
-
-// Endpoint: crear categoría (stub)
-app.post('/category/create', async (req, res) => {
-    try {
-        const { name, group_name } = req.body || {};
-        if (!name) return res.status(400).send('Falta nombre');
-        const id = await bridge.createCategory(name, group_name || "Gastos Variables");
-        res.json({ id, status: 'created' });
-    } catch (e) {
-        console.error(e);
-        res.status(500).json({ error: e.message });
-    }
-});
-
-// Endpoint: bulk categorize (stub)
-app.post('/category/bulk-categorize', async (req, res) => {
-    try {
-        const { category_name, keywords_list } = req.body || {};
-        if (!category_name) return res.status(400).send('Falta categoría');
-        const count = await bridge.bulkCategorize(category_name, keywords_list || []);
-        res.json({ updated: count, status: 'success' });
-    } catch (e) {
-        console.error(e);
         res.status(500).json({ error: e.message });
     }
 });

@@ -1,0 +1,2533 @@
+[
+  {
+    "account_name": "DAVIVIENDA 009300682029",
+    "transactions": [
+      {
+        "date": "2024-11-07",
+        "amount": -165000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 2120 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2024-11-08",
+        "amount": -2422242.0,
+        "payee_name": "Pago Tarj. Credito N4245298359917785",
+        "notes": "Doc: 2647 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2024-11-08",
+        "amount": -100000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 5538 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2024-11-11",
+        "amount": -105000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos 550108900500829",
+        "notes": "Doc: 2767 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2024-11-12",
+        "amount": -600000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 3744 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2024-11-12",
+        "amount": -136200.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 4139 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2024-11-13",
+        "amount": -100000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 2725 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2024-11-14",
+        "amount": -100000.0,
+        "payee_name": "Retiro en Cajero Automatico",
+        "notes": "Doc: 3177 | Oficina: FARMATODO AUTONORTE 104"
+      },
+      {
+        "date": "2024-11-14",
+        "amount": -13000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 2317 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2024-11-15",
+        "amount": 4926000.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 0060 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2024-11-15",
+        "amount": 1815000.0,
+        "payee_name": "Abono En Cuenta Por Pago de Nomina",
+        "notes": "Doc: 3285 | Oficina: PORTAL PYMES"
+      },
+      {
+        "date": "2024-11-15",
+        "amount": -30000.0,
+        "payee_name": "Retiro en Cajero Automatico",
+        "notes": "Doc: 4276 | Oficina: FARMATODO AUTONORTE 104"
+      },
+      {
+        "date": "2024-11-15",
+        "amount": -5199802.0,
+        "payee_name": "Pago Tarj. Credito N4559810005217418",
+        "notes": "Doc: 2821 | Oficina: BTA PROCESOS ESP."
+      },
+      {
+        "date": "2024-11-17",
+        "amount": -465000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 3923 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2024-11-18",
+        "amount": -1285000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 3674 | Oficina: www.davivienda.com"
+      },
+      {
+        "date": "2024-11-19",
+        "amount": 20808031.0,
+        "payee_name": "Desembolso Credito",
+        "notes": "Doc: 4524 | Oficina: BTA PROCESOS ESP."
+      },
+      {
+        "date": "2024-11-20",
+        "amount": -12030334.0,
+        "payee_name": "Compra PAGOS ELECTRONICOS SCOT",
+        "notes": "Doc: 2473 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2024-11-20",
+        "amount": -2155913.86,
+        "payee_name": "Compra BANCO DAVIVIENDA SA",
+        "notes": "Doc: 9778 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2024-11-20",
+        "amount": -127000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 3400 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2024-11-21",
+        "amount": -305600.0,
+        "payee_name": "Compra BANCOLOMBIA",
+        "notes": "Doc: 2897 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2024-11-21",
+        "amount": -958700.0,
+        "payee_name": "Compra Banco Caja Social S.A.",
+        "notes": "Doc: 4165 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2024-11-22",
+        "amount": -45000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 0630 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2024-11-24",
+        "amount": -16000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 2436 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2024-11-25",
+        "amount": -170000.0,
+        "payee_name": "Compra BANCOLOMBIA",
+        "notes": "Doc: 3267 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2024-11-28",
+        "amount": -360000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 2237 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2024-11-28",
+        "amount": -140000.0,
+        "payee_name": "Compra BANCOLOMBIA",
+        "notes": "Doc: 1338 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2024-11-29",
+        "amount": 4024600.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 0270 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2024-11-29",
+        "amount": 19000.0,
+        "payee_name": "Abono En Cuenta Por Pago de Nomina",
+        "notes": "Doc: 5022 | Oficina: PORTAL PYMES"
+      },
+      {
+        "date": "2024-11-30",
+        "amount": 340.64,
+        "payee_name": "Rendimientos Financieros",
+        "notes": "Doc: 0000 | Oficina: 0000"
+      },
+      {
+        "date": "2024-11-30",
+        "amount": -108119.14,
+        "payee_name": "Gravamen a los Movimientos Financieros",
+        "notes": "Doc: 0000 | Oficina: 0000"
+      },
+      {
+        "date": "2024-12-01",
+        "amount": -465000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 0195 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2024-12-01",
+        "amount": -1312472.0,
+        "payee_name": "Compra BANCOLOMBIA",
+        "notes": "Doc: 5386 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2024-12-02",
+        "amount": -40000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 2637 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2024-12-02",
+        "amount": -42000.0,
+        "payee_name": "Compra BANCOLOMBIA",
+        "notes": "Doc: 4004 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2024-12-02",
+        "amount": -40000.0,
+        "payee_name": "Retiro en Cajero Automatico",
+        "notes": "Doc: 1200 | Oficina: FARMATODO AUTONORTE 104"
+      },
+      {
+        "date": "2024-12-03",
+        "amount": -165000.0,
+        "payee_name": "Compra BANCOLOMBIA",
+        "notes": "Doc: 8169 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2024-12-05",
+        "amount": 450271.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 7020 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2024-12-05",
+        "amount": 113753.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 2190 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2024-12-05",
+        "amount": 1877892.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 3020 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2024-12-05",
+        "amount": 474417.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 2010 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2024-12-06",
+        "amount": -2916333.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 5520 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2024-12-06",
+        "amount": -40000.0,
+        "payee_name": "Retiro en Cajero Automatico",
+        "notes": "Doc: 3714 | Oficina: SANTA PAULA BOGOTA"
+      },
+      {
+        "date": "2024-12-06",
+        "amount": -80000.0,
+        "payee_name": "Retiro en Cajero Automatico",
+        "notes": "Doc: 3718 | Oficina: SANTA PAULA BOGOTA"
+      },
+      {
+        "date": "2024-12-06",
+        "amount": -100000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 0349 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2024-12-09",
+        "amount": -200000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 4952 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2024-12-10",
+        "amount": -100000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 5632 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2024-12-11",
+        "amount": -70000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 2826 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2024-12-13",
+        "amount": 4935000.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 0450 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2024-12-13",
+        "amount": 3855000.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 9308 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2024-12-13",
+        "amount": -6972447.0,
+        "payee_name": "Pago Tarj. Credito N4245298359917785",
+        "notes": "Doc: 2623 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2024-12-14",
+        "amount": 3630000.0,
+        "payee_name": "Abono En Cuenta Por Pago de Nomina",
+        "notes": "Doc: 7425 | Oficina: PORTAL PYMES"
+      },
+      {
+        "date": "2024-12-15",
+        "amount": -1285000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 2317 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2024-12-15",
+        "amount": -465000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 2334 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2024-12-15",
+        "amount": -214301.0,
+        "payee_name": "Pago Tarj. Credito N4559810005217418",
+        "notes": "Doc: 0717 | Oficina: BTA PROCESOS ESP."
+      },
+      {
+        "date": "2024-12-16",
+        "amount": -302000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 3631 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2024-12-16",
+        "amount": -410000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 0640 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2024-12-17",
+        "amount": -14600.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 1625 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2024-12-18",
+        "amount": -50000.0,
+        "payee_name": "Compra BANCOLOMBIA",
+        "notes": "Doc: 6131 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2024-12-20",
+        "amount": -8000000.0,
+        "payee_name": "Compra PAGOS ELECTRONICOS SCOT",
+        "notes": "Doc: 1884 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2024-12-20",
+        "amount": 3000000.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 4438 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2024-12-20",
+        "amount": -3450000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 3224 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2024-12-23",
+        "amount": 25500.0,
+        "payee_name": "Transferencia Recibida De Daviplata",
+        "notes": "Doc: 8000 | Oficina: DAVIPLATA"
+      },
+      {
+        "date": "2024-12-23",
+        "amount": 13450.0,
+        "payee_name": "Transferencia Recibida De Daviplata",
+        "notes": "Doc: 5900 | Oficina: DAVIPLATA"
+      },
+      {
+        "date": "2024-12-26",
+        "amount": 830000.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 1520 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2024-12-26",
+        "amount": -231402.25,
+        "payee_name": "Compra BANCO DAVIVIENDA SA",
+        "notes": "Doc: 0653 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2024-12-27",
+        "amount": -630200.0,
+        "payee_name": "Compra BANCOLOMBIA",
+        "notes": "Doc: 7464 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2024-12-30",
+        "amount": 4926800.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 8536 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2024-12-31",
+        "amount": 414.88,
+        "payee_name": "Rendimientos Financieros",
+        "notes": "Doc: 0000 | Oficina: 0000"
+      },
+      {
+        "date": "2024-12-31",
+        "amount": -110382.99,
+        "payee_name": "Gravamen a los Movimientos Financieros",
+        "notes": "Doc: 0000 | Oficina: 0000"
+      },
+      {
+        "date": "2025-01-01",
+        "amount": -465000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 1938 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-01-13",
+        "amount": -4200000.0,
+        "payee_name": "Pago Tarj. Credito N4245298359917785",
+        "notes": "Doc: 4532 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-01-13",
+        "amount": -100000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 2406 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-01-15",
+        "amount": 275000.0,
+        "payee_name": "Abono Por Transferencia De Fondos",
+        "notes": "Doc: 3812 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-01-15",
+        "amount": -300000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 0405 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-01-15",
+        "amount": -141851.0,
+        "payee_name": "Pago Tarj. Credito N4559810005217418",
+        "notes": "Doc: 2602 | Oficina: BTA PROCESOS ESP."
+      },
+      {
+        "date": "2025-01-16",
+        "amount": 4742000.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 9529 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-01-16",
+        "amount": -2000000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 1943 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-01-16",
+        "amount": -465000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 1642 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-01-17",
+        "amount": 20000000.0,
+        "payee_name": "Abono Por Transferencia De Fondos",
+        "notes": "Doc: 4832 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-01-17",
+        "amount": -3000000.0,
+        "payee_name": "Pago Tarj. Credito N4245298359917785",
+        "notes": "Doc: 4387 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-01-17",
+        "amount": -1275000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 3278 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-01-17",
+        "amount": -555444.0,
+        "payee_name": "Pago Tarj. Credito N4559810005217418",
+        "notes": "Doc: 5498 | Oficina: BTA PROCESOS ESP."
+      },
+      {
+        "date": "2025-01-17",
+        "amount": -632709.42,
+        "payee_name": "Compra BANCO DAVIVIENDA SA",
+        "notes": "Doc: 2457 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2025-01-17",
+        "amount": -15711088.0,
+        "payee_name": "Compra PAGOS ELECTRONICOS SCOT",
+        "notes": "Doc: 2955 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2025-01-19",
+        "amount": -298801.0,
+        "payee_name": "Compra BANCOLOMBIA",
+        "notes": "Doc: 4472 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2025-01-21",
+        "amount": -100000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 4224 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-01-22",
+        "amount": 617058.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 9110 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-01-23",
+        "amount": 3020077.0,
+        "payee_name": "Deposito Cheque con Volante Oficina",
+        "notes": "Doc: 0514 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-01-23",
+        "amount": -249405.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 3702 | Oficina: www.davivienda.com"
+      },
+      {
+        "date": "2025-01-24",
+        "amount": -50000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 0432 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-01-24",
+        "amount": -119000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 2634 | Oficina: www.davivienda.com"
+      },
+      {
+        "date": "2025-01-25",
+        "amount": -177100.0,
+        "payee_name": "Pago AFINIA 0001163256",
+        "notes": "Doc: 6085 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-01-27",
+        "amount": -43000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 3700 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-01-28",
+        "amount": -208030.0,
+        "payee_name": "Pago De Servicio",
+        "notes": "Doc: 4929 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-01-29",
+        "amount": -140000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 0306 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-01-29",
+        "amount": -170000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 0441 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-01-29",
+        "amount": 2057600.0,
+        "payee_name": "Abono En Cuenta Por Pago de Nomina",
+        "notes": "Doc: 7104 | Oficina: PORTAL PYMES"
+      },
+      {
+        "date": "2025-01-29",
+        "amount": -200000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 0550 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-01-30",
+        "amount": -110000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 3639 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-01-30",
+        "amount": -1455200.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 5444 | Oficina: www.davivienda.com"
+      },
+      {
+        "date": "2025-01-30",
+        "amount": 925200.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 3004 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-01-30",
+        "amount": 4584669.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 0302 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-01-30",
+        "amount": -465000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 5333 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-01-30",
+        "amount": -1397000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 4754 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-01-31",
+        "amount": 265.51,
+        "payee_name": "Rendimientos Financieros",
+        "notes": "Doc: 0000 | Oficina: 0000"
+      },
+      {
+        "date": "2025-01-31",
+        "amount": -135406.09,
+        "payee_name": "Gravamen a los Movimientos Financieros",
+        "notes": "Doc: 0000 | Oficina: 0000"
+      },
+      {
+        "date": "2025-02-01",
+        "amount": -100000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 4719 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-02-04",
+        "amount": -3513290.0,
+        "payee_name": "Pago Tarj. Credito N4245298339794882",
+        "notes": "Doc: 2781 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-02-04",
+        "amount": 1510869.0,
+        "payee_name": "Deposito Cheque con Volante Oficina",
+        "notes": "Doc: 0472 | Oficina: Centro Comercial Calima"
+      },
+      {
+        "date": "2025-02-05",
+        "amount": -8855.91,
+        "payee_name": "Compra PEXTO SOLUCIONES SAS",
+        "notes": "Doc: 6146 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2025-02-05",
+        "amount": -410000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 5014 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-02-05",
+        "amount": 695929.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 9252 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-02-05",
+        "amount": -65000.0,
+        "payee_name": "Compra BANCOLOMBIA",
+        "notes": "Doc: 3466 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2025-02-06",
+        "amount": -88400.59,
+        "payee_name": "Compra PEXTO SOLUCIONES SAS",
+        "notes": "Doc: 8509 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2025-02-06",
+        "amount": -40000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 3743 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-02-11",
+        "amount": -546000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 5539 | Oficina: www.davivienda.com"
+      },
+      {
+        "date": "2025-02-12",
+        "amount": -240000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 4913 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-02-13",
+        "amount": -200000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 4917 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-02-16",
+        "amount": -465000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 3373 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-02-17",
+        "amount": -66000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 1658 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-02-18",
+        "amount": -219789.71,
+        "payee_name": "Compra BANCO DAVIVIENDA SA",
+        "notes": "Doc: 6274 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2025-02-18",
+        "amount": 7710000.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 3056 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-02-18",
+        "amount": 1000000.0,
+        "payee_name": "Abono Por Transferencia De Fondos",
+        "notes": "Doc: 3303 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-02-19",
+        "amount": -7336000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 0900 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-02-19",
+        "amount": 7317700.0,
+        "payee_name": "Transferencia Recibida De Daviplata",
+        "notes": "Doc: 4100 | Oficina: DAVIPLATA"
+      },
+      {
+        "date": "2025-02-19",
+        "amount": -300000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 3202 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-02-21",
+        "amount": -255000.0,
+        "payee_name": "Pago COMPUKAR SAS",
+        "notes": "Doc: 1083 | Oficina: QR Interoperable"
+      },
+      {
+        "date": "2025-02-21",
+        "amount": -3000000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 2749 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-02-21",
+        "amount": -4570000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 3647 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-02-22",
+        "amount": 4485000.0,
+        "payee_name": "Transferencia Recibida De Daviplata",
+        "notes": "Doc: 7700 | Oficina: DAVIPLATA"
+      },
+      {
+        "date": "2025-02-22",
+        "amount": -3000000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 8412 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-02-22",
+        "amount": -720000.0,
+        "payee_name": "Retiro en Cajero Automatico",
+        "notes": "Doc: 2571 | Oficina: FARMATODO AUTONORTE 104"
+      },
+      {
+        "date": "2025-02-22",
+        "amount": -130000.0,
+        "payee_name": "Retiro en Cajero Automatico",
+        "notes": "Doc: 2576 | Oficina: FARMATODO AUTONORTE 104"
+      },
+      {
+        "date": "2025-02-23",
+        "amount": -500000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 2591 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-02-25",
+        "amount": 4798100.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 4126 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-02-26",
+        "amount": 2920340.0,
+        "payee_name": "Abono Por Transferencia De Fondos",
+        "notes": "Doc: 4708 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-02-26",
+        "amount": -11000000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 4542 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-02-27",
+        "amount": 4950000.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 8236 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-02-28",
+        "amount": 1622000.0,
+        "payee_name": "Abono En Cuenta Por Pago de Nomina",
+        "notes": "Doc: 7272 | Oficina: PORTAL PYMES"
+      },
+      {
+        "date": "2025-02-28",
+        "amount": -200000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 9660 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-02-28",
+        "amount": 419.88,
+        "payee_name": "Rendimientos Financieros",
+        "notes": "Doc: 0000 | Oficina: 0000"
+      },
+      {
+        "date": "2025-02-28",
+        "amount": -147893.33,
+        "payee_name": "Gravamen a los Movimientos Financieros",
+        "notes": "Doc: 0000 | Oficina: 0000"
+      },
+      {
+        "date": "2025-03-01",
+        "amount": -300000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 0845 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-03-02",
+        "amount": -85000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 5111 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-03-03",
+        "amount": -465000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 1802 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-03-03",
+        "amount": -1397781.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 1544 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-03-04",
+        "amount": -200000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 4029 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-03-05",
+        "amount": -70000.0,
+        "payee_name": "Retiro en Cajero Automatico",
+        "notes": "Doc: 7580 | Oficina: FARMATODO AUTONORTE 104"
+      },
+      {
+        "date": "2025-03-06",
+        "amount": -1058121.0,
+        "payee_name": "Pago Tarj. Credito N4245298339794882",
+        "notes": "Doc: 2674 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-03-07",
+        "amount": -30000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 0252 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-03-09",
+        "amount": -100000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 1722 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-03-10",
+        "amount": -360000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 0008 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-03-13",
+        "amount": -250000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 1922 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-03-14",
+        "amount": 5444600.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 0330 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-03-14",
+        "amount": -120000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 3102 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-03-14",
+        "amount": -170000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 6811 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-03-17",
+        "amount": 136500.0,
+        "payee_name": "Transferencia Recibida De Daviplata",
+        "notes": "Doc: 7900 | Oficina: DAVIPLATA"
+      },
+      {
+        "date": "2025-03-17",
+        "amount": -7765813.0,
+        "payee_name": "Compra PAGOS ELECTRONICOS SCOT",
+        "notes": "Doc: 3492 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2025-03-18",
+        "amount": -60000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 0952 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-03-18",
+        "amount": 3000000.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 4840 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-03-18",
+        "amount": -465000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 1943 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-03-18",
+        "amount": -1285000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 0756 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-03-18",
+        "amount": -200000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 1651 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-03-20",
+        "amount": -282098.27,
+        "payee_name": "Compra BANCO DAVIVIENDA SA",
+        "notes": "Doc: 1702 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2025-03-21",
+        "amount": -625000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 2931 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-03-27",
+        "amount": 2202000.0,
+        "payee_name": "Abono En Cuenta Por Pago de Nomina",
+        "notes": "Doc: 9644 | Oficina: PORTAL PYMES"
+      },
+      {
+        "date": "2025-03-28",
+        "amount": -212740.0,
+        "payee_name": "Pago De Servicio",
+        "notes": "Doc: 7621 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-03-28",
+        "amount": -250000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 5073 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-03-28",
+        "amount": -80000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 3200 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-03-28",
+        "amount": 300000.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 5082 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-03-28",
+        "amount": 5060750.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 5358 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-03-31",
+        "amount": -395000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 5833 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-03-31",
+        "amount": 296.42,
+        "payee_name": "Rendimientos Financieros",
+        "notes": "Doc: 0000 | Oficina: 0000"
+      },
+      {
+        "date": "2025-03-31",
+        "amount": -64906.2,
+        "payee_name": "Gravamen a los Movimientos Financieros",
+        "notes": "Doc: 0000 | Oficina: 0000"
+      },
+      {
+        "date": "2025-04-01",
+        "amount": -465000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 4908 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-04-01",
+        "amount": -100000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 3017 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-04-01",
+        "amount": -500000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 2100 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-04-01",
+        "amount": 286950.0,
+        "payee_name": "Abono Por Transferencia De Fondos",
+        "notes": "Doc: 4803 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-04-02",
+        "amount": -283570.0,
+        "payee_name": "Pago De Servicio",
+        "notes": "Doc: 7688 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-04-02",
+        "amount": -200000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 8154 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-04-02",
+        "amount": -50000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 0397 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-04-03",
+        "amount": -100000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 7901 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-04-03",
+        "amount": 283570.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 6005 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-04-04",
+        "amount": 477461.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 0190 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-04-04",
+        "amount": 47749.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 2050 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-04-04",
+        "amount": -100000.0,
+        "payee_name": "Retiro en Cajero Automatico",
+        "notes": "Doc: 0666 | Oficina: FARMATODO AUTONORTE 104"
+      },
+      {
+        "date": "2025-04-08",
+        "amount": -1357782.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 5389 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-04-08",
+        "amount": -60000.0,
+        "payee_name": "Retiro en Cajero Automatico",
+        "notes": "Doc: 8385 | Oficina: CARULLA SANTA BARBARA"
+      },
+      {
+        "date": "2025-04-08",
+        "amount": -360000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 1949 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-04-08",
+        "amount": -170000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 7068 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-04-09",
+        "amount": 8194873.0,
+        "payee_name": "Deposito Cheque con Volante Oficina",
+        "notes": "Doc: 0960 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-04-09",
+        "amount": 409727.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 8325 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-04-10",
+        "amount": 252100.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 7955 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-04-14",
+        "amount": -8250000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 4657 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-04-14",
+        "amount": 8200000.0,
+        "payee_name": "Transferencia Recibida De Daviplata",
+        "notes": "Doc: 9100 | Oficina: DAVIPLATA"
+      },
+      {
+        "date": "2025-04-14",
+        "amount": -3000000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 0198 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-04-14",
+        "amount": -1000000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 1258 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-04-15",
+        "amount": 5458950.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 9870 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-04-15",
+        "amount": -15713.0,
+        "payee_name": "Pago Tarj. Credito N4559810005217418",
+        "notes": "Doc: 2053 | Oficina: BTA PROCESOS ESP."
+      },
+      {
+        "date": "2025-04-16",
+        "amount": -465000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 0738 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-04-20",
+        "amount": -3000000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 6147 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-04-20",
+        "amount": -1285000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 1623 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-04-21",
+        "amount": -1665671.13,
+        "payee_name": "Compra BANCO DAVIVIENDA SA",
+        "notes": "Doc: 0331 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2025-04-21",
+        "amount": -2194900.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 8349 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-04-21",
+        "amount": -1327300.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 2263 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-04-22",
+        "amount": -430000.0,
+        "payee_name": "Pago Tarj. Credito N4245298339794882",
+        "notes": "Doc: 3046 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-04-22",
+        "amount": -272245.0,
+        "payee_name": "Pago Tarj. Credito N4559810005217418",
+        "notes": "Doc: 1583 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-04-23",
+        "amount": -170000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 0034 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-04-23",
+        "amount": -3400000.0,
+        "payee_name": "Compra PAGOS ELECTRONICOS SCOT",
+        "notes": "Doc: 4248 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2025-04-23",
+        "amount": 6000000.0,
+        "payee_name": "Abono Por Transferencia De Fondos",
+        "notes": "Doc: 4729 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-04-23",
+        "amount": 1750000.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 0865 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-04-23",
+        "amount": -7218800.0,
+        "payee_name": "Compra PAGOS ELECTRONICOS SCOT",
+        "notes": "Doc: 9006 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2025-04-29",
+        "amount": 2515620.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 3660 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-04-30",
+        "amount": 2392000.0,
+        "payee_name": "Abono En Cuenta Por Pago de Nomina",
+        "notes": "Doc: 7545 | Oficina: PORTAL PYMES"
+      },
+      {
+        "date": "2025-04-30",
+        "amount": 11121408.25,
+        "payee_name": "Transferencia 0000008001986445",
+        "notes": "Doc: 8315 | Oficina: PROCESOS ACH"
+      },
+      {
+        "date": "2025-04-30",
+        "amount": 579.53,
+        "payee_name": "Rendimientos Financieros",
+        "notes": "Doc: 0000 | Oficina: 0000"
+      },
+      {
+        "date": "2025-04-30",
+        "amount": -149763.91,
+        "payee_name": "Gravamen a los Movimientos Financieros",
+        "notes": "Doc: 0000 | Oficina: 0000"
+      },
+      {
+        "date": "2025-05-01",
+        "amount": -465000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 1653 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-05-04",
+        "amount": -532000.0,
+        "payee_name": "Compra Banco Caja Social S.A.",
+        "notes": "Doc: 1796 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2025-05-04",
+        "amount": -397473.0,
+        "payee_name": "Pago Tarj. Credito N4245298339794882",
+        "notes": "Doc: 1401 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-05-05",
+        "amount": -360000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 2208 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-05-06",
+        "amount": -1400000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 1248 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-05-07",
+        "amount": -11121409.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 0426 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-05-07",
+        "amount": -85000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 5907 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-05-12",
+        "amount": -2000000.0,
+        "payee_name": "Compra Banco Caja Social S.A",
+        "notes": "Doc: 6912 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2025-05-13",
+        "amount": -120000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 6164 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-05-14",
+        "amount": 300000.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 1588 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-05-15",
+        "amount": -70000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 0602 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-05-15",
+        "amount": 5299548.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 3486 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-05-15",
+        "amount": -200000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 6677 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-05-15",
+        "amount": -1240000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 4846 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-05-15",
+        "amount": -510000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 1100 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-05-15",
+        "amount": -4715.0,
+        "payee_name": "Pago Tarj. Credito N4559810005217418",
+        "notes": "Doc: 1170 | Oficina: BTA PROCESOS ESP."
+      },
+      {
+        "date": "2025-05-16",
+        "amount": -100000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 0912 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-05-17",
+        "amount": -20000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 4109 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-05-19",
+        "amount": -60000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 5014 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-05-19",
+        "amount": 4000000.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 9760 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-05-20",
+        "amount": -75000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 3801 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-05-20",
+        "amount": -150000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 2144 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-05-22",
+        "amount": -573000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 0441 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-05-27",
+        "amount": -589000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 3255 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-05-27",
+        "amount": -75000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 5416 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-05-28",
+        "amount": -200000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 1143 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-05-30",
+        "amount": 5466000.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 8650 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-05-30",
+        "amount": 2392000.0,
+        "payee_name": "Abono En Cuenta Por Pago de Nomina",
+        "notes": "Doc: 0244 | Oficina: PORTAL PYMES"
+      },
+      {
+        "date": "2025-05-31",
+        "amount": -465000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 3714 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-05-31",
+        "amount": -800000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 3119 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-05-31",
+        "amount": 588.63,
+        "payee_name": "Rendimientos Financieros",
+        "notes": "Doc: 0000 | Oficina: 0000"
+      },
+      {
+        "date": "2025-05-31",
+        "amount": -86450.38,
+        "payee_name": "Gravamen a los Movimientos Financieros",
+        "notes": "Doc: 0000 | Oficina: 0000"
+      },
+      {
+        "date": "2025-06-01",
+        "amount": -183000.0,
+        "payee_name": "Pago",
+        "notes": "Doc: 3940 | Oficina: QR Interoperable"
+      },
+      {
+        "date": "2025-06-01",
+        "amount": -40000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 1026 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-06-01",
+        "amount": 19000.0,
+        "payee_name": "Transferencia Recibida De Daviplata",
+        "notes": "Doc: 8100 | Oficina: DAVIPLATA"
+      },
+      {
+        "date": "2025-06-03",
+        "amount": -100000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 5939 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-06-03",
+        "amount": -75000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 0246 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-06-04",
+        "amount": -90000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 3727 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-06-05",
+        "amount": -3680332.0,
+        "payee_name": "Pago Tarj. Credito N4245298339794882",
+        "notes": "Doc: 1073 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-06-05",
+        "amount": -560000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 5458 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-06-06",
+        "amount": -100000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 4206 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-06-06",
+        "amount": -100000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 2002 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-06-10",
+        "amount": -100000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 5120 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-06-10",
+        "amount": -51000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 0518 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-06-11",
+        "amount": -75000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 2331 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-06-11",
+        "amount": -66300.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 2519 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-06-11",
+        "amount": 200600.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 5224 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-06-13",
+        "amount": 5479000.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 4900 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-06-13",
+        "amount": -215085.66,
+        "payee_name": "Compra BANCO DAVIVIENDA SA",
+        "notes": "Doc: 8669 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2025-06-13",
+        "amount": -200000.0,
+        "payee_name": "Retiro en Cajero Automatico",
+        "notes": "Doc: 3917 | Oficina: TERPEL CHUSACA"
+      },
+      {
+        "date": "2025-06-15",
+        "amount": -19250.0,
+        "payee_name": "Pago Tarj. Credito N4559810005217418",
+        "notes": "Doc: 0550 | Oficina: BTA PROCESOS ESP."
+      },
+      {
+        "date": "2025-06-16",
+        "amount": -465000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 4845 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-06-16",
+        "amount": -1750000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 5047 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-06-17",
+        "amount": -200000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 8304 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-06-18",
+        "amount": -247000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 5634 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-06-18",
+        "amount": -349626.0,
+        "payee_name": "Compra Aguas de Cartagena",
+        "notes": "Doc: 2887 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2025-06-18",
+        "amount": -5000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 4029 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-06-19",
+        "amount": -4033782.0,
+        "payee_name": "Compra PAGOS ELECTRONICOS SCOT",
+        "notes": "Doc: 5021 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2025-06-21",
+        "amount": -100000.0,
+        "payee_name": "Retiro en Cajero Automatico",
+        "notes": "Doc: 1978 | Oficina: FARMATODO AUTONORTE 104"
+      },
+      {
+        "date": "2025-06-24",
+        "amount": -370000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 4231 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-06-25",
+        "amount": 5418400.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 9898 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-06-25",
+        "amount": 2232150.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 0704 | Oficina: Centro Comercial Calima"
+      },
+      {
+        "date": "2025-06-25",
+        "amount": -5000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 5250 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-06-26",
+        "amount": -353400.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 5459 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-06-26",
+        "amount": -82000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 0038 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-06-26",
+        "amount": -160000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 3724 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-06-27",
+        "amount": 910445.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 7390 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-06-27",
+        "amount": 4592000.0,
+        "payee_name": "Abono En Cuenta Por Pago de Nomina",
+        "notes": "Doc: 3211 | Oficina: PORTAL PYMES"
+      },
+      {
+        "date": "2025-06-30",
+        "amount": -200000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 0105 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-06-30",
+        "amount": -465000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 2226 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-06-30",
+        "amount": -1387782.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 9800 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-06-30",
+        "amount": -6000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 2676 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-06-30",
+        "amount": -8000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 2745 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-06-30",
+        "amount": 808.03,
+        "payee_name": "Rendimientos Financieros",
+        "notes": "Doc: 0000 | Oficina: 0000"
+      },
+      {
+        "date": "2025-06-30",
+        "amount": -63370.2,
+        "payee_name": "Gravamen a los Movimientos Financieros",
+        "notes": "Doc: 0000 | Oficina: 0000"
+      },
+      {
+        "date": "2025-07-01",
+        "amount": -155000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 3063 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-07-01",
+        "amount": -75000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 0132 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-07-01",
+        "amount": -100000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 0318 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-07-01",
+        "amount": -304000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 7097 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-07-01",
+        "amount": -100000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 5503 | Oficina: BTA PROCESOS ESP."
+      },
+      {
+        "date": "2025-07-02",
+        "amount": -100300.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 0850 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-07-02",
+        "amount": -2000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 4041 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-07-02",
+        "amount": -260000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 0637 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-07-03",
+        "amount": -200000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 0254 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-07-04",
+        "amount": -100300.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 4127 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-07-05",
+        "amount": -9000449.0,
+        "payee_name": "Pago Tarj. Credito N4245298339794882",
+        "notes": "Doc: 4899 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-07-07",
+        "amount": -105000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 5312 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-07-07",
+        "amount": 34000.0,
+        "payee_name": "Transferencia Recibida De Daviplata",
+        "notes": "Doc: 6200 | Oficina: DAVIPLATA"
+      },
+      {
+        "date": "2025-07-09",
+        "amount": -60300.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 0609 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-07-09",
+        "amount": -75000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 0849 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-07-09",
+        "amount": -3000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 0911 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-07-09",
+        "amount": 5469600.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 5800 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-07-13",
+        "amount": -40000.0,
+        "payee_name": "Retiro en Cajero Automatico",
+        "notes": "Doc: 0706 | Oficina: FARMATODO AUTONORTE 104"
+      },
+      {
+        "date": "2025-07-14",
+        "amount": -480000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 4649 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-07-15",
+        "amount": -454592.11,
+        "payee_name": "Compra BANCO DAVIVIENDA SA",
+        "notes": "Doc: 3598 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2025-07-15",
+        "amount": -60000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 0048 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-07-15",
+        "amount": -290990.0,
+        "payee_name": "Pago Tarj. Credito N4559810005217418",
+        "notes": "Doc: 1458 | Oficina: BTA PROCESOS ESP."
+      },
+      {
+        "date": "2025-07-16",
+        "amount": -465000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 2630 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-07-16",
+        "amount": -1285000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 1088 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-07-16",
+        "amount": -75000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 0630 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-07-17",
+        "amount": -64000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 0801 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-07-17",
+        "amount": -343000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 3358 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-07-17",
+        "amount": 343000.0,
+        "payee_name": "Abono Por Transferencia De Fondos",
+        "notes": "Doc: 4154 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-07-18",
+        "amount": -100000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 1349 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-07-18",
+        "amount": -1045300.0,
+        "payee_name": "Compra Banco Caja Social S.A.",
+        "notes": "Doc: 7361 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2025-07-19",
+        "amount": -120000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 3653 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-07-24",
+        "amount": -75000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 4358 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-07-24",
+        "amount": -375000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 0545 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-07-25",
+        "amount": -7000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 1105 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-07-29",
+        "amount": -68000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 2309 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-07-30",
+        "amount": -110000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 3315 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-07-31",
+        "amount": -75000.0,
+        "payee_name": "Transferencia Enviada A Daviplata",
+        "notes": "Doc: 1432 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-07-31",
+        "amount": 5535000.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 3008 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-07-31",
+        "amount": 2392000.0,
+        "payee_name": "Abono En Cuenta Por Pago de Nomina",
+        "notes": "Doc: 0946 | Oficina: PORTAL PYMES"
+      },
+      {
+        "date": "2025-07-31",
+        "amount": 658.46,
+        "payee_name": "Rendimientos Financieros",
+        "notes": "Doc: 0000 | Oficina: 0000"
+      },
+      {
+        "date": "2025-07-31",
+        "amount": -64692.91,
+        "payee_name": "Gravamen a los Movimientos Financieros",
+        "notes": "Doc: 0000 | Oficina: 0000"
+      },
+      {
+        "date": "2025-08-01",
+        "amount": -490000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 2752 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-08-01",
+        "amount": -140000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 8959 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-08-01",
+        "amount": -100000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 9981 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-08-01",
+        "amount": -165000.0,
+        "payee_name": "Transferencia enviada a Daviplata",
+        "notes": "Doc: 3144 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-08-01",
+        "amount": -100000.0,
+        "payee_name": "Transferencia enviada a Daviplata",
+        "notes": "Doc: 5463 | Oficina: BTA PROCESOS ESP."
+      },
+      {
+        "date": "2025-08-04",
+        "amount": -6664992.0,
+        "payee_name": "Compra PAGOS ELECTRONICOS SCOT",
+        "notes": "Doc: 5524 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2025-08-04",
+        "amount": -400000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 4803 | Oficina: www.davivienda.com"
+      },
+      {
+        "date": "2025-08-04",
+        "amount": -1407781.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 6616 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-08-05",
+        "amount": 100000.0,
+        "payee_name": "Abono Por Transferencia De Fondos",
+        "notes": "Doc: 2675 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-08-05",
+        "amount": -75000.0,
+        "payee_name": "Transferencia enviada a Daviplata",
+        "notes": "Doc: 2145 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-08-12",
+        "amount": -1318000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 9794 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-08-12",
+        "amount": -15000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 6970 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-08-13",
+        "amount": 1335000.0,
+        "payee_name": "Transferencia Recibidas Con Llave",
+        "notes": "Doc: 4107 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-08-13",
+        "amount": 5336752.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 1984 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-08-13",
+        "amount": -5700000.0,
+        "payee_name": "Pago Tarj. Credito N4245298392189426",
+        "notes": "Doc: 3704 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-08-13",
+        "amount": -290990.0,
+        "payee_name": "Pago Tarj. Credito N4559810005217418",
+        "notes": "Doc: 0637 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-08-13",
+        "amount": -265911.16,
+        "payee_name": "Compra BANCO DAVIVIENDA SA",
+        "notes": "Doc: 9681 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2025-08-14",
+        "amount": -164000.0,
+        "payee_name": "Pago Tarj. Credito N4245298392189426",
+        "notes": "Doc: 5422 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-08-15",
+        "amount": -68000.0,
+        "payee_name": "Transferencia enviada a Daviplata",
+        "notes": "Doc: 0838 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-08-15",
+        "amount": -180000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 0823 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-08-16",
+        "amount": -465000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 2524 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-08-16",
+        "amount": -1285000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 0755 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-08-19",
+        "amount": -175000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 9905 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-08-19",
+        "amount": 360000.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 5092 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-08-19",
+        "amount": -360000.0,
+        "payee_name": "Transferencia enviada a Daviplata",
+        "notes": "Doc: 5407 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-08-20",
+        "amount": 15000000.0,
+        "payee_name": "Abono Por Transferencia De Fondos",
+        "notes": "Doc: 4746 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-08-21",
+        "amount": -1717000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 2326 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-08-21",
+        "amount": -405000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 1780 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-08-21",
+        "amount": -190000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 1368 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-08-22",
+        "amount": -809999.97,
+        "payee_name": "Compra PEXTO COLOMBIA SAS",
+        "notes": "Doc: 7514 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2025-08-25",
+        "amount": -150000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 3547 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-08-26",
+        "amount": -115000.0,
+        "payee_name": "Transferencia enviada a Daviplata",
+        "notes": "Doc: 4648 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-08-29",
+        "amount": 5449300.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 1772 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-08-29",
+        "amount": 2392000.0,
+        "payee_name": "Abono En Cuenta Por Pago de Nomina",
+        "notes": "Doc: 9054 | Oficina: PORTAL PYMES"
+      },
+      {
+        "date": "2025-08-31",
+        "amount": -200000.0,
+        "payee_name": "Transferencia enviada a Daviplata",
+        "notes": "Doc: 4114 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-08-31",
+        "amount": 655.8,
+        "payee_name": "Rendimientos Financieros",
+        "notes": "Doc: 0000 | Oficina: 0000"
+      },
+      {
+        "date": "2025-08-31",
+        "amount": -93666.67,
+        "payee_name": "Gravamen a los Movimientos Financieros",
+        "notes": "Doc: 0000 | Oficina: 0000"
+      },
+      {
+        "date": "2025-09-01",
+        "amount": -595000.0,
+        "payee_name": "Compra Banco Caja Social S.A.",
+        "notes": "Doc: 2895 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2025-09-01",
+        "amount": -1285000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 2418 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-09-01",
+        "amount": -465000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 0892 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-09-01",
+        "amount": -377222.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 5869 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-09-01",
+        "amount": -1136158.0,
+        "payee_name": "Pago Tarj. Credito N4245298392189426",
+        "notes": "Doc: 5793 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-09-01",
+        "amount": -115000.0,
+        "payee_name": "Transferencia enviada a Daviplata",
+        "notes": "Doc: 1326 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-09-01",
+        "amount": -100000.0,
+        "payee_name": "Transferencia enviada a Daviplata",
+        "notes": "Doc: 0553 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-09-01",
+        "amount": -100000.0,
+        "payee_name": "Transferencia enviada a Daviplata",
+        "notes": "Doc: 5548 | Oficina: BTA PROCESOS ESP."
+      },
+      {
+        "date": "2025-09-04",
+        "amount": -70000.0,
+        "payee_name": "Transferencia enviada a Daviplata",
+        "notes": "Doc: 5431 | Oficina: Comprar y Pagos PSE"
+      },
+      {
+        "date": "2025-09-05",
+        "amount": -12000000.0,
+        "payee_name": "Compra PAGOS ELECTRONICOS SCOT",
+        "notes": "Doc: 3664 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-09-08",
+        "amount": -175000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 9842 | Oficina: Oficina"
+      },
+      {
+        "date": "2025-09-09",
+        "amount": -75000.0,
+        "payee_name": "Transferencia enviada a Daviplata",
+        "notes": "Doc: 4430 | Oficina: Comprar y Pagos PSE"
+      },
+      {
+        "date": "2025-09-10",
+        "amount": -920000.0,
+        "payee_name": "Transferencia enviada a Daviplata",
+        "notes": "Doc: 1237 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-09-13",
+        "amount": -200000.0,
+        "payee_name": "Transferencia enviada a Daviplata",
+        "notes": "Doc: 1509 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-09-15",
+        "amount": -30000.0,
+        "payee_name": "Transferencia enviada a Daviplata",
+        "notes": "Doc: 3438 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-09-15",
+        "amount": 5292300.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 5750 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-09-15",
+        "amount": -165000.0,
+        "payee_name": "Transferencia enviada a Daviplata",
+        "notes": "Doc: 5710 | Oficina: www.davivienda.com"
+      },
+      {
+        "date": "2025-09-15",
+        "amount": -1285000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 4010 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-09-15",
+        "amount": -500000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 0853 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-09-15",
+        "amount": -290990.0,
+        "payee_name": "Pago Tarj. Credito N4559810005217418",
+        "notes": "Doc: 1839 | Oficina: BTA PROCESOS ESP."
+      },
+      {
+        "date": "2025-09-17",
+        "amount": 6500000.0,
+        "payee_name": "Deposito Cheque con Volante Oficina",
+        "notes": "Doc: 0929 | Oficina: Centro Comercial Callima"
+      },
+      {
+        "date": "2025-09-19",
+        "amount": 354100.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 7086 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-09-22",
+        "amount": -541450.0,
+        "payee_name": "Transferencia enviada a Daviplata",
+        "notes": "Doc: 1931 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-09-22",
+        "amount": -75000.0,
+        "payee_name": "Transferencia enviada a Daviplata",
+        "notes": "Doc: 0555 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-09-23",
+        "amount": -4136406.16,
+        "payee_name": "Compra BANCO DAVIVIENDA SA",
+        "notes": "Doc: 8766 | Oficina: Compras y Pagos PSE"
+      },
+      {
+        "date": "2025-09-23",
+        "amount": -4237000.0,
+        "payee_name": "Transferencia enviada a Daviplata",
+        "notes": "Doc: 0708 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-09-25",
+        "amount": -110000.0,
+        "payee_name": "Transferencia enviada a Daviplata",
+        "notes": "Doc: 5155 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-09-29",
+        "amount": -150000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 1460 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-09-30",
+        "amount": 2000000.0,
+        "payee_name": "Abono Por Transferencia De Fondos",
+        "notes": "Doc: 5904 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-09-30",
+        "amount": -3000000.0,
+        "payee_name": "Transferencia Enviada Con Llave",
+        "notes": "Doc: 1089 | Oficina: REDEBAN"
+      },
+      {
+        "date": "2025-09-30",
+        "amount": -475000.0,
+        "payee_name": "Transferencia enviada a Daviplata",
+        "notes": "Doc: 5527 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-09-30",
+        "amount": 4240400.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 3868 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-09-30",
+        "amount": 353620.0,
+        "payee_name": "Deposito Efectivo con Volante Oficina",
+        "notes": "Doc: 3512 | Oficina: SECTOR INDUSTRIAL PALOQUE"
+      },
+      {
+        "date": "2025-09-30",
+        "amount": -15000.0,
+        "payee_name": "Transferencia enviada a Daviplata",
+        "notes": "Doc: 5953 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-09-30",
+        "amount": 2038380.0,
+        "payee_name": "Abono En Cuenta Por Pago de Nomina",
+        "notes": "Doc: 3000 | Oficina: PORTAL PYMES"
+      },
+      {
+        "date": "2025-09-30",
+        "amount": -500000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 1046 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-09-30",
+        "amount": -1373000.0,
+        "payee_name": "Descuento Por Transferencia De Fondos",
+        "notes": "Doc: 5794 | Oficina: App Davivienda"
+      },
+      {
+        "date": "2025-09-30",
+        "amount": 459.67,
+        "payee_name": "Rendimientos Financieros",
+        "notes": "Doc: 0000 | Oficina: 0000"
+      },
+      {
+        "date": "2025-09-30",
+        "amount": -137988.89,
+        "payee_name": "Gravamen a los Movimientos Financieros",
+        "notes": "Doc: 0000 | Oficina: 0000"
+      }
+    ]
+  },
+  {
+    "account_name": "DAVIVIENDA Crediexpress 590047390050353-2",
+    "account_type": "credit",
+    "transactions": [
+      {
+        "date": "2024-12-04",
+        "amount": 1856175.48,
+        "payee_name": "ADELANTO CUOTA",
+        "notes": "Doc: 00003629"
+      },
+      {
+        "date": "2025-01-05",
+        "amount": 2008000.0,
+        "payee_name": "ADELANTO CUOTA",
+        "notes": "Doc: 00185095"
+      },
+      {
+        "date": "2025-02-04",
+        "amount": 2008000.0,
+        "payee_name": "ADELANTO CUOTA",
+        "notes": "Doc: 00543506"
+      },
+      {
+        "date": "2025-03-04",
+        "amount": 2008000.0,
+        "payee_name": "ADELANTO CUOTA",
+        "notes": "Doc: 00185731"
+      },
+      {
+        "date": "2025-04-11",
+        "amount": 2008000.0,
+        "payee_name": "ADELANTO CUOTA",
+        "notes": "Doc: 00055825"
+      },
+      {
+        "date": "2025-05-05",
+        "amount": 2008000.0,
+        "payee_name": "ADELANTO CUOTA",
+        "notes": "Doc: 00175187"
+      },
+      {
+        "date": "2025-06-05",
+        "amount": 2008000.0,
+        "payee_name": "ADELANTO CUOTA",
+        "notes": "Doc: 00282454"
+      },
+      {
+        "date": "2025-07-08",
+        "amount": 2008000.0,
+        "payee_name": "ADELANTO CUOTA",
+        "notes": "Doc: 00520527"
+      },
+      {
+        "date": "2025-08-05",
+        "amount": 2008000.0,
+        "payee_name": "ADELANTO CUOTA",
+        "notes": "Doc: 00222770"
+      },
+      {
+        "date": "2025-09-03",
+        "amount": 2008000.0,
+        "payee_name": "ADELANTO CUOTA",
+        "notes": "Doc: 00224075"
+      },
+      {
+        "date": "2025-10-05",
+        "amount": 2008000.0,
+        "payee_name": "ADELANTO CUOTA",
+        "notes": "Doc: 00591504"
+      }
+    ]
+  }
+]
