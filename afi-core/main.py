@@ -793,6 +793,13 @@ async def receive_message(request: Request):
     body = data.get("body", "")
     print(f"📥 Brain recibió de {user_phone}: {body} | hasMedia={data.get('hasMedia')} media={data.get('media')}")
 
+    # DEBUG: Audit the received payload
+    print(f"DEBUG: Full received data: {json.dumps(data, indent=2)}")
+    has_media_debug = data.get("hasMedia")
+    media_payload_debug = data.get("media")
+    print(f"DEBUG: hasMedia_raw={has_media_debug}, media_payload_raw={media_payload_debug}")
+    # END DEBUG
+
     user = identity_manager.get_user_session(user_phone or "")
     if not user:
         return {"reply": "No estás autorizado para usar AFI. Solicita acceso al administrador."}
@@ -831,6 +838,9 @@ async def receive_message(request: Request):
         filename_lower = (media_payload.get("filename") or "").lower()
         path_lower = media_payload.get("path", "").lower()
         is_doc = any(x in mime for x in ["csv", "comma-separated", "sheet", "excel", "ms-excel", "pdf"]) or filename_lower.endswith((".csv", ".xlsx", ".xls", ".pdf")) or path_lower.endswith((".csv", ".xlsx", ".xls", ".pdf"))
+        
+        print(f"DEBUG: mime_raw={mime_raw}, mime={mime}, filename_lower={filename_lower}, path_lower={path_lower}, is_doc={is_doc}")
+        
         if is_doc:
             # Override mime_raw for CSV files to ensure compatibility with Gemini's File API
             if any(x in mime for x in ["csv", "comma-separated"]) or filename_lower.endswith(".csv") or path_lower.endswith(".csv"):
