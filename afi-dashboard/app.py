@@ -66,30 +66,53 @@ def call_core_api(question: str) -> Dict:
 
 
 # --- Render helpers ---
-def render_payload(data: Dict):
+def render_payload(data):
+    """
+    Renderiza la respuesta de AFI de forma limpia.
+    Maneja texto puro (Onboarding) y gráficos (Dashboard).
+    """
+    # 1. EVITAR JSON CRUDO
+    # Si data viene como string JSON, convertirlo a dict
+    if isinstance(data, str):
+        try:
+            data = json.loads(data)
+        except:
+            st.error("Error parseando respuesta del servidor")
+            return
+
+    # 2. EXTRAER EL TEXTO (La respuesta hablada)
+    # Si existe 'answer', muéstralo como Markdown limpio, NO como dict
+    answer_text = data.get("answer", "")
+    if answer_text:
+        # Usamos un contenedor limpio, sin bordes de código
+        st.markdown(f"### 🤖 AFI dice:\n{answer_text}")
+
+    # 3. RENDERIZAR VISUALES (Si existen)
     viz_type = data.get("viz_type")
-    df = pd.DataFrame(data.get("data", []))
-    title = data.get("title") or "Resultado"
-    st.subheader(title)
-    st.caption(data.get("explanation", ""))
+    
+    # Caso especial: Onboarding (Solo texto)
+    if viz_type == "text":
+        return # Ya pintamos el texto arriba, no hacemos nada más
 
-    if viz_type in ("none", "text") or df.empty:
-        if data.get("answer"):
-            st.info(data.get("answer"))
-        else:
-            st.info("Sin datos para mostrar.")
-        return
-
-    if viz_type == "bar_chart" and len(df.columns) >= 2:
-        fig = px.bar(df, x=df.columns[0], y=df.columns[1], title=title)
-        st.plotly_chart(fig, use_container_width=True)
-    elif viz_type == "line_chart" and len(df.columns) >= 2:
-        fig = px.line(df, x=df.columns[0], y=df.columns[1], title=title)
-        st.plotly_chart(fig, use_container_width=True)
-    elif viz_type == "metric" and not df.empty and len(df.columns) >= 2:
-        st.metric(label=title, value=df.iloc[0, 1])
-    else:
-        st.dataframe(df, use_container_width=True, hide_index=True)
+    # Caso Dashboard: Gráficos
+    raw_data = data.get("data", [])
+    if raw_data:
+        df = pd.DataFrame(raw_data)
+        
+        if viz_type == "bar_chart":
+            fig = px.bar(df, x=df.columns[0], y=df.columns[1], title=data.get("title"))
+            st.plotly_chart(fig, use_container_width=True)
+            
+        elif viz_type == "line_chart":
+            fig = px.line(df, x=df.columns[0], y=df.columns[1], title=data.get("title"))
+            st.plotly_chart(fig, use_container_width=True)
+            
+        elif viz_type == "table":
+            st.dataframe(df, use_container_width=True)
+            
+        elif viz_type == "metric":
+            val = df.iloc[0, 1] if not df.empty else 0
+            st.metric(label=data.get("title"), value=f"${val:,.0f}")
 
 
 # --- Auth UI ---
@@ -156,8 +179,6 @@ def render_executive_summary():
     st.title("🚀 Resumen Ejecutivo")
     summary = call_core_api("Dame un resumen ejecutivo con patrimonio total, gastos del mes, deuda y tendencia mensual.")
     
-    answer = summary.get("answer") or "Resumen no disponible."
-    st.markdown(answer)
     render_payload(summary)
 
 
@@ -174,8 +195,9 @@ def render_chat_sidebar():
     st.sidebar.title("💬 Chat AFI")
     # Mostrar historial
     for msg in st.session_state["messages"]:
-        with st.sidebar.expander(f"{msg['role'].capitalize()}: {msg['content'][:30]}..."):
-            st.write(msg["content"])
+        if msg.get("content"):
+            with st.sidebar.expander(f"{msg['role'].capitalize()}: {msg['content'][:30]}..."):
+                st.write(msg["content"])
     user_input = st.sidebar.chat_input("Analiza mis finanzas...")
     if user_input:
         st.session_state["messages"].append({"role": "user", "content": user_input})
