@@ -53,8 +53,16 @@ def call_core_api(question: str) -> Dict:
         "token": st.session_state.get("auth_token"),
         "history": st.session_state.get("messages") or [],
     }
-    r = requests.post(f"{CORE_URL}/chat/query", json=payload, timeout=25)
-    return r.json()
+    try:
+        r = requests.post(f"{CORE_URL}/chat/query", json=payload, timeout=25)
+        if r.status_code == 200:
+            return r.json()
+        else:
+            st.error(f"🔥 Error del Núcleo ({r.status_code}): {r.text}")
+            return {"answer": f"Error del sistema: {r.status_code}", "viz_type": "text"}
+    except Exception as e:
+        st.error(f"❌ Error de Conexión: {str(e)}")
+        return {"answer": "No se pudo conectar con el cerebro de AFI.", "viz_type": "text"}
 
 
 # --- Render helpers ---
@@ -146,12 +154,8 @@ def show_login_screen():
 
 def render_executive_summary():
     st.title("🚀 Resumen Ejecutivo")
-    try:
-        summary = call_core_api("Dame un resumen ejecutivo con patrimonio total, gastos del mes, deuda y tendencia mensual.")
-    except Exception as e:
-        st.error(f"Error obteniendo resumen: {e}")
-        return
-
+    summary = call_core_api("Dame un resumen ejecutivo con patrimonio total, gastos del mes, deuda y tendencia mensual.")
+    
     answer = summary.get("answer") or "Resumen no disponible."
     st.markdown(answer)
     render_payload(summary)
