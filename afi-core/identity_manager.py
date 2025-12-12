@@ -3,8 +3,15 @@ import os
 # Whitelist de usuarios autorizados
 AUTHORIZED_PHONES = {
     "3002127123": {
-        "name": "Usuario1",
-        "role": "ADMIN",  # Asumiendo que el primero es el administrador principal
+        "name": "Diego (Tel)",
+        "role": "ADMIN",
+        "personal_id": os.getenv("ACTUAL_BUDGET_ID_MAIN"),
+        "household_id": os.getenv("ACTUAL_BUDGET_ID_HOUSEHOLD"),
+        "persona": "CFO Estratégico",
+    },
+    "20590190669871": {  # ID detectado en logs para Diego
+        "name": "Diego (LID)",
+        "role": "ADMIN",
         "personal_id": os.getenv("ACTUAL_BUDGET_ID_MAIN"),
         "household_id": os.getenv("ACTUAL_BUDGET_ID_HOUSEHOLD"),
         "persona": "CFO Estratégico",
@@ -12,7 +19,7 @@ AUTHORIZED_PHONES = {
     "3113570340": {
         "name": "Usuario2",
         "role": "USER",
-        "personal_id": os.getenv("ACTUAL_BUDGET_ID_SPOUSE"), # Opcional, si corresponde
+        "personal_id": os.getenv("ACTUAL_BUDGET_ID_SPOUSE"),
         "household_id": os.getenv("ACTUAL_BUDGET_ID_HOUSEHOLD"),
         "persona": "Coach Empático",
     },
