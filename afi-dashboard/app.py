@@ -1,4 +1,5 @@
 import os
+import json
 from typing import Dict, List, Optional
 
 import pandas as pd
@@ -58,61 +59,75 @@ def call_core_api(question: str) -> Dict:
         if r.status_code == 200:
             return r.json()
         else:
-            st.error(f"🔥 Error del Núcleo ({r.status_code}): {r.text}")
+            # st.error(f"🔥 Error del Núcleo ({r.status_code}): {r.text}")
             return {"answer": f"Error del sistema: {r.status_code}", "viz_type": "text"}
     except Exception as e:
-        st.error(f"❌ Error de Conexión: {str(e)}")
+        # st.error(f"❌ Error de Conexión: {str(e)}")
         return {"answer": "No se pudo conectar con el cerebro de AFI.", "viz_type": "text"}
 
 
 # --- Render helpers ---
-def render_payload(data):
-    """
-    Renderiza la respuesta de AFI de forma limpia.
-    Maneja texto puro (Onboarding) y gráficos (Dashboard).
-    """
-    # 1. EVITAR JSON CRUDO
-    # Si data viene como string JSON, convertirlo a dict
+def safe_parse(data):
+    """Asegura que data sea un Diccionario, no un String JSON"""
+    if isinstance(data, dict):
+        return data
     if isinstance(data, str):
         try:
-            data = json.loads(data)
+            # Intentar limpiar comillas simples que a veces llegan de Python str()
+            if data.strip().startswith("{") and "'" in data:
+                import ast
+                return ast.literal_eval(data)
+            return json.loads(data)
         except:
-            st.error("Error parseando respuesta del servidor")
-            return
+            return {"answer": data, "viz_type": "text"} # Fallback a texto plano
+    return {"answer": "", "viz_type": "none"}
 
-    # 2. EXTRAER EL TEXTO (La respuesta hablada)
-    # Si existe 'answer', muéstralo como Markdown limpio, NO como dict
-    answer_text = data.get("answer", "")
-    if answer_text:
-        # Usamos un contenedor limpio, sin bordes de código
-        st.markdown(f"### 🤖 AFI dice:\n{answer_text}")
+def render_payload(raw_data):
+    """Renderizador Maestro"""
+    data = safe_parse(raw_data)
+    
+    # 1. TEXTO (La voz de AFI)
+    # Solo mostramos el texto si NO es nulo
+    answer = data.get("answer", "")
+    if answer and answer != "None":
+        st.markdown(f"{answer}")
 
-    # 3. RENDERIZAR VISUALES (Si existen)
+    # 2. VISUALES
     viz_type = data.get("viz_type")
     
-    # Caso especial: Onboarding (Solo texto)
-    if viz_type == "text":
-        return # Ya pintamos el texto arriba, no hacemos nada más
+    if viz_type == "text" or viz_type is None:
+        return
 
-    # Caso Dashboard: Gráficos
-    raw_data = data.get("data", [])
-    if raw_data:
-        df = pd.DataFrame(raw_data)
-        
-        if viz_type == "bar_chart":
-            fig = px.bar(df, x=df.columns[0], y=df.columns[1], title=data.get("title"))
-            st.plotly_chart(fig, use_container_width=True)
-            
-        elif viz_type == "line_chart":
-            fig = px.line(df, x=df.columns[0], y=df.columns[1], title=data.get("title"))
-            st.plotly_chart(fig, use_container_width=True)
-            
-        elif viz_type == "table":
-            st.dataframe(df, use_container_width=True)
-            
-        elif viz_type == "metric":
-            val = df.iloc[0, 1] if not df.empty else 0
-            st.metric(label=data.get("title"), value=f"${val:,.0f}")
+    # Si hay datos para gráficos
+    rows = data.get("data", [])
+    if not rows:
+        return # No pintar gráficos vacíos
+
+    df = pd.DataFrame(rows)
+    
+    if viz_type == "bar_chart":
+        st.plotly_chart(px.bar(df, x=df.columns[0], y=df.columns[1], title=data.get("title")), use_container_width=True)
+    elif viz_type == "line_chart":
+        st.plotly_chart(px.line(df, x=df.columns[0], y=df.columns[1], title=data.get("title")), use_container_width=True)
+    elif viz_type == "metric":
+        val = df.iloc[0, 1] if not df.empty else 0
+        st.metric(label=data.get("title"), value=f"${val:,.0f}")
+    elif viz_type == "table":
+        st.dataframe(df, use_container_width=True)
+
+def show_empty_state_ui():
+    """Lo que se muestra cuando el sistema es nuevo"""
+    st.info("👋 **¡Bienvenido a AFI!** Tu Bóveda está lista pero vacía.")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown("### Paso 1: Configura")
+        st.markdown("Habla con el chat a la izquierda para definir tu perfil.")
+    with col2:
+        st.markdown("### Paso 2: Ingesta")
+        st.markdown("Arrastra tus extractos PDF/CSV o reenvía facturas a tu correo.")
+    
+    st.warning("⚠️ No verás gráficos hasta que registres tu primer movimiento.")
 
 
 # --- Auth UI ---
@@ -177,14 +192,31 @@ def show_login_screen():
 
 def render_executive_summary():
     st.title("🚀 Resumen Ejecutivo")
-    summary = call_core_api("Dame un resumen ejecutivo con patrimonio total, gastos del mes, deuda y tendencia mensual.")
     
-    render_payload(summary)
+    # 1. Consultar estado de datos
+    try:
+        # Pedimos al core un chequeo rápido
+        summary = call_core_api("Dame un resumen ejecutivo con patrimonio total, gastos del mes, deuda y tendencia mensual.")
+        data = safe_parse(summary)
+        
+        # 2. DETECTOR DE VACÍO
+        text = str(data.get("answer", "")).lower()
+        # Palabras clave que indican que el bot no encontró nada
+        if "no encontré datos" in text or "no hay transacciones" in text or "no tengo información" in text:
+             # Doble check: si tampoco hay data tabular
+             if not data.get("data"):
+                 show_empty_state_ui()
+                 return
+
+        render_payload(data)
+            
+    except Exception as e:
+        show_empty_state_ui()
 
 
 def render_dynamic_analysis(payload: Dict):
     st.title(payload.get("title", "Análisis"))
-    st.markdown(payload.get("answer") or payload.get("explanation") or "")
+    # Usar render_payload para coherencia
     render_payload(payload)
     if st.button("Volver al Resumen"):
         st.session_state["current_view"] = None
@@ -195,9 +227,19 @@ def render_chat_sidebar():
     st.sidebar.title("💬 Chat AFI")
     # Mostrar historial
     for msg in st.session_state["messages"]:
-        if msg.get("content"):
-            with st.sidebar.expander(f"{msg['role'].capitalize()}: {msg['content'][:30]}..."):
-                st.write(msg["content"])
+        role = msg.get("role")
+        content = msg.get("content")
+        payload = msg.get("payload")
+        
+        with st.sidebar.chat_message(role):
+            if role == "assistant":
+                if payload:
+                    render_payload(payload)
+                else:
+                    st.markdown(content)
+            else:
+                st.markdown(content)
+
     user_input = st.sidebar.chat_input("Analiza mis finanzas...")
     if user_input:
         st.session_state["messages"].append({"role": "user", "content": user_input})
