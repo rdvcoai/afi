@@ -903,10 +903,10 @@ async def start_scheduler():
 
         scheduler.add_job(send_morning_briefing, CronTrigger(hour=7, minute=0))
         
-        # PRUEBA INMEDIATA (En 2 minutos para validación de sprint)
-        run_date = datetime.datetime.now() + datetime.timedelta(minutes=2)
-        scheduler.add_job(send_morning_briefing, 'date', run_date=run_date)
-        print(f"🧪 Prueba de Briefing programada para: {run_date}")
+        # PRUEBA INMEDIATA (Deshabilitada para producción)
+        # run_date = datetime.datetime.now() + datetime.timedelta(minutes=2)
+        # scheduler.add_job(send_morning_briefing, 'date', run_date=run_date)
+        # print(f"🧪 Prueba de Briefing programada para: {run_date}")
 
         # Backup diario 03:00 AM
         scheduler.add_job(run_backup, CronTrigger(hour=3, minute=0))

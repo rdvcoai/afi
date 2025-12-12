@@ -74,6 +74,16 @@ async def send_morning_briefing():
     print("🌅 Ejecutando Morning Briefing...")
     snapshot = _fetch_snapshot()
 
+    # VALIDACIÓN ANTI-ALUCINACIÓN (ONBOARDING)
+    # Si no hay liquidez ni gastos registrados, asumimos cuenta nueva.
+    # Evitamos enviar "Liquidez $-11" o mensajes vacíos.
+    liquidity = snapshot.get('liquidity') or 0
+    month_spend = snapshot.get('month_spend') or 0
+    
+    if liquidity == 0 and month_spend == 0:
+        print("🔕 Briefing silenciado: No hay datos suficientes (Usuario en Onboarding).")
+        return
+
     prompt = f"""
 ACTÚA COMO: CFO Personal Proactivo.
 CONTEXTO: Son las 7:00 AM.
